@@ -11,7 +11,7 @@
 | 项 | 位置 |
 |---|---|
 | 窗口标题、标题栏文字 | `MainWindow.xaml` Title / Content |
-| 三个品牌资源 | `Resources/logo.svg`、`logo.ico`、`banner_dark.svg`（原文件已备份为 `.bak`） |
+| 三个品牌资源 | `Resources/logo.svg`、`logo.ico`、`banner_dark.svg`（上游原文件收在 `Resources/_originals/`，后缀 `.bak`） |
 | 崩溃对话框、Snackbar、文件对话框 | `Application.xaml.vb`、`MainViewModel.vb` |
 | G-code 头部注释 | `GCodeGenerator.vb:152,156` |
 | 可执行文件名 | `PolyCut.vbproj` 的 `<AssemblyName>PlotWorks</AssemblyName>` |
