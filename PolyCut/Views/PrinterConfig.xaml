@@ -1,0 +1,424 @@
+<ui:FluentWindow x:Class="PrinterConfig"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                 xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+                 xmlns:loc="clr-namespace:LazyTranslate;assembly=LazyTranslate"
+                 xmlns:local="clr-namespace:PolyCut"
+                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                 xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                 Title="{loc:T Printer Configuration}"
+                 Width="900"
+                 Height="600" 
+                 MinWidth="850"
+                 d:DataContext="{d:DesignInstance Type=local:SVGPageViewModel}"
+                 ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
+                 ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                 ExtendsContentIntoTitleBar="True"
+                 Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                 RenderOptions.BitmapScalingMode="HighQuality"
+                 WindowBackdropType="Mica"
+                 WindowStartupLocation="CenterOwner"
+                 mc:Ignorable="d">
+    <Grid Margin="20" RowDefinitions="Auto Auto *">
+        <ContentPresenter x:Name="RootContentDialog"
+                          Grid.Row="0" Grid.RowSpan="3"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Panel.ZIndex="200"
+                          d:Visibility="Collapsed" />
+        <ui:TitleBar Grid.Row="0" Margin="-20" Panel.ZIndex="121" />
+        <Label Grid.Row="0" Margin="10 10" loc:L.Value="Printer Configuration" />
+
+        <Grid Grid.Row="1" Margin="10 0 10 10" ColumnDefinitions="Auto * Auto Auto">
+
+            <Label Grid.Column="1"
+                   VerticalAlignment="Center"
+                   loc:L.Value="Bambu Lab A1" />
+        </Grid>
+
+        <TabControl x:Name="PrinterConfigurationTabs"
+                    Grid.Row="2"
+                    VerticalAlignment="Stretch"
+                    BorderBrush="Transparent">
+            <TabControl.Template>
+                <ControlTemplate TargetType="{x:Type TabControl}">
+                    <Grid KeyboardNavigation.TabNavigation="Local">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <StackPanel Grid.Row="0"
+                                    Panel.ZIndex="1"
+                                    IsItemsHost="True" KeyboardNavigation.TabIndex="1" Orientation="Horizontal" />
+                        <Border Grid.Row="1"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter Margin="{TemplateBinding Padding}" ContentSource="SelectedContent" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </TabControl.Template>
+            <TabItem x:Name="HardwareSettingsTab" IsSelected="True" Style="{StaticResource CustomTabStyle}">
+                <TabItem.Header>
+                    <StackPanel Margin="5 0" Orientation="Horizontal">
+                        <ui:SymbolIcon Margin="0 0 6 0" Symbol="Options20" />
+                        <TextBlock loc:L.Value="Hardware" />
+                    </StackPanel>
+                </TabItem.Header>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Separator Grid.Row="0" Margin="5" />
+                    <ScrollViewer Grid.Row="1"
+                                  Margin="-14 10 -14 0" Padding="25 0 25 0"
+                                  CanContentScroll="True" VerticalScrollBarVisibility="Auto">
+                        <StackPanel Margin="14 0" FlowDirection="LeftToRight">
+                            <StackPanel.Background>
+                                <SolidColorBrush Color="Transparent" />
+                            </StackPanel.Background>
+
+                            <Label Margin="0 0 0 10" loc:L.Value="Bed Dimensions" />
+
+                            <Grid Margin="0 0 0 0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="25" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="60" />
+                                    <ColumnDefinition Width="25" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition />
+                                    <RowDefinition Height="5" />
+                                    <RowDefinition />
+                                </Grid.RowDefinitions>
+                                <Label Padding="1 2 0 0" VerticalAlignment="Center" Content="W" />
+                                <ui:TextBox x:Name="canvasW"
+                                            Grid.Column="1"
+                                            ClearButtonEnabled="False" GotKeyboardFocus="TextBox_GotKeyboardFocus"
+                                            Text="{Binding MainVM.Printer.BedWidth, Mode=TwoWay, UpdateSourceTrigger=LostFocus, Converter={StaticResource UnitConverter}}" />
+                                <Label Grid.Row="0" Grid.Column="3"
+                                       Padding="1 2 0 0" VerticalAlignment="Center"
+                                       Content="H" />
+                                <ui:TextBox x:Name="canvasH"
+                                            Grid.Row="0" Grid.Column="4"
+                                            ClearButtonEnabled="False" GotKeyboardFocus="TextBox_GotKeyboardFocus"
+                                            Text="{Binding MainVM.Printer.BedHeight, Mode=TwoWay, UpdateSourceTrigger=LostFocus, Converter={StaticResource UnitConverter}}" />
+                                <Label Grid.Column="1"
+                                       Padding="1 2 10 0" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                       Content="mm"
+                                       Foreground="{StaticResource ControlFillColorSecondaryBrush}" />
+                                <Label Grid.Column="4"
+                                       Padding="1 2 10 0" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                       Content="mm"
+                                       Foreground="{StaticResource ControlFillColorSecondaryBrush}" />
+                            </Grid>
+
+                            <StackPanel Margin="0 10 0 10" Orientation="Horizontal">
+
+                                <Label Margin="0 4 10 0" loc:L.Value="Working Area" />
+
+                                <ToggleButton x:Name="WorkingAreaVisibilityToggle" IsChecked="{Binding UIConfiguration.ShowWorkArea}">
+                                    <ToggleButton.Template>
+                                        <ControlTemplate>
+                                            <ContentControl>
+                                                <ContentControl.Style>
+                                                    <Style TargetType="ContentControl">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource AncestorType={x:Type ToggleButton}}}" Value="True">
+                                                                <Setter Property="Content">
+                                                                    <Setter.Value>
+                                                                        <ui:Card Padding="8 4" Background="Transparent" BorderBrush="{StaticResource PaletteBlueBrush}">
+                                                                            <ui:SymbolIcon Symbol="Eye24" />
+                                                                        </ui:Card>
+                                                                    </Setter.Value>
+                                                                </Setter>
+
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource AncestorType={x:Type ToggleButton}}}" Value="False">
+                                                                <Setter Property="Content">
+                                                                    <Setter.Value>
+                                                                        <ui:Card Padding="8 4" Background="Transparent" BorderBrush="{StaticResource ControlFillColorSecondaryBrush}">
+                                                                            <!--  Replace with your unchecked icon  -->
+                                                                            <ui:SymbolIcon Symbol="EyeOff24" />
+                                                                        </ui:Card>
+                                                                    </Setter.Value>
+                                                                </Setter>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </ContentControl.Style>
+                                            </ContentControl>
+                                        </ControlTemplate>
+                                    </ToggleButton.Template>
+                                </ToggleButton>
+
+                            </StackPanel>
+
+                            <Grid Margin="0 0 0 0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="25" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="60" />
+                                    <ColumnDefinition Width="25" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition />
+                                    <RowDefinition Height="5" />
+                                    <RowDefinition />
+                                </Grid.RowDefinitions>
+
+                                <Label Padding="1 2 0 0" VerticalAlignment="Center" Content="X" />
+                                <ui:TextBox Grid.Column="1"
+                                            ClearButtonEnabled="False" GotKeyboardFocus="TextBox_GotKeyboardFocus"
+                                            Text="{Binding MainVM.Printer.WorkingOffsetX, Mode=TwoWay, UpdateSourceTrigger=LostFocus, Converter={StaticResource UnitConverter}, ConverterParameter=allowzero}" />
+                                <Label Grid.Row="0" Grid.Column="3"
+                                       Padding="1 2 0 0" VerticalAlignment="Center"
+                                       Content="Y" />
+                                <ui:TextBox Grid.Row="0" Grid.Column="4"
+                                            ClearButtonEnabled="False" GotKeyboardFocus="TextBox_GotKeyboardFocus"
+                                            Text="{Binding MainVM.Printer.WorkingOffsetY, Mode=TwoWay, UpdateSourceTrigger=LostFocus, Converter={StaticResource UnitConverter}, ConverterParameter=allowzero}" />
+
+                                <Label Grid.Row="2"
+                                       Padding="1 2 0 0" VerticalAlignment="Center"
+                                       Content="W" />
+                                <ui:TextBox Grid.Row="2" Grid.Column="1"
+                                            ClearButtonEnabled="False" GotKeyboardFocus="TextBox_GotKeyboardFocus"
+                                            Text="{Binding MainVM.Printer.WorkingWidth, Mode=TwoWay, UpdateSourceTrigger=LostFocus, Converter={StaticResource UnitConverter}, ConverterParameter=allowzero}" />
+                                <Label Grid.Row="2" Grid.Column="3"
+                                       Padding="1 2 0 0" VerticalAlignment="Center"
+                                       Content="H" />
+                                <ui:TextBox Grid.Row="2" Grid.Column="4"
+                                            ClearButtonEnabled="False" GotKeyboardFocus="TextBox_GotKeyboardFocus"
+                                            Text="{Binding MainVM.Printer.WorkingHeight, Mode=TwoWay, UpdateSourceTrigger=LostFocus, Converter={StaticResource UnitConverter}, ConverterParameter=allowzero}" />
+
+                                <Label Grid.Column="1"
+                                       Padding="1 2 10 0" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                       Content="mm"
+                                       Foreground="{StaticResource ControlFillColorSecondaryBrush}" />
+                                <Label Grid.Column="4"
+                                       Padding="1 2 10 0" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                       Content="mm"
+                                       Foreground="{StaticResource ControlFillColorSecondaryBrush}" />
+                                <Label Grid.Row="2" Grid.Column="1"
+                                       Padding="1 2 10 0" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                       Content="mm"
+                                       Foreground="{StaticResource ControlFillColorSecondaryBrush}" />
+                                <Label Grid.Row="2" Grid.Column="4"
+                                       Padding="1 2 10 0" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                       Content="mm"
+                                       Foreground="{StaticResource ControlFillColorSecondaryBrush}" />
+
+                            </Grid>
+
+                            <StackPanel Margin="0 10 0 10" Orientation="Horizontal">
+
+                                <Label Margin="0 4 10 0" loc:L.Value="Bambu Lab A1 Connection" />
+
+                            </StackPanel>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="5" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="5" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="10" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <Label Grid.Row="0" Grid.Column="0"
+                                       Padding="1 2 10 0" VerticalAlignment="Center"
+                                       loc:L.Value="Host Address" />
+                                <ui:TextBox x:Name="PrinterHostAddress"
+                                            Grid.Row="0" Grid.Column="1"
+                                            ClearButtonEnabled="False" GotKeyboardFocus="TextBox_GotKeyboardFocus"
+                                            PlaceholderText="192.168.31.113"
+                                            Text="{Binding MainVM.Printer.HostAddress, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+
+                                <Label Grid.Row="2" Grid.Column="0"
+                                       Padding="1 2 10 0" VerticalAlignment="Center"
+                                       loc:L.Value="Access Code" />
+                                <ui:TextBox x:Name="PrinterAccessCode"
+                                            Grid.Row="2" Grid.Column="1"
+                                            ClearButtonEnabled="False" GotKeyboardFocus="TextBox_GotKeyboardFocus"
+                                            PlaceholderText="{loc:T 8 character access code}"
+                                            Text="{Binding MainVM.Printer.AccessCode, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+
+                                <Label Grid.Row="4" Grid.Column="0"
+                                       Padding="1 2 10 0" VerticalAlignment="Center"
+                                       loc:L.Value="Serial Number" />
+                                <ui:TextBox x:Name="PrinterSerialNumber"
+                                            Grid.Row="4" Grid.Column="1"
+                                            ClearButtonEnabled="False" GotKeyboardFocus="TextBox_GotKeyboardFocus"
+                                            PlaceholderText="{loc:T Printer serial number}"
+                                            Text="{Binding MainVM.Printer.SerialNumber, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+
+                                <TextBlock Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2"
+                                           MinHeight="16" FontSize="12" LineHeight="16"
+                                           Foreground="{DynamicResource TextControlForegroundDisabled}" TextWrapping="Wrap"
+                                           loc:L.Value="The A1 must be in LAN Mode with Developer Mode enabled. The access code is the MQTT password (TLS, port 8883)." />
+                            </Grid>
+
+                            <StackPanel Margin="0 10 0 10" Orientation="Horizontal">
+
+                                <Label Margin="0 4 10 0" loc:L.Value="Toolhead Offset" />
+
+                            </StackPanel>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="25" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="60" />
+                                    <ColumnDefinition Width="25" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Label Padding="1 2 0 0" VerticalAlignment="Center" Content="X" />
+                                <ui:TextBox Grid.Column="1"
+                                            ClearButtonEnabled="False" GotKeyboardFocus="TextBox_GotKeyboardFocus"
+                                            Text="{Binding MainVM.Printer.ToolOffsetX, Mode=TwoWay, UpdateSourceTrigger=LostFocus, Converter={StaticResource UnitConverter}, ConverterParameter=allownegative}" />
+                                <Label Grid.Column="3"
+                                       Padding="1 2 0 0" VerticalAlignment="Center"
+                                       Content="Y" />
+                                <ui:TextBox Grid.Column="4"
+                                            ClearButtonEnabled="False" GotKeyboardFocus="TextBox_GotKeyboardFocus"
+                                            Text="{Binding MainVM.Printer.ToolOffsetY, Mode=TwoWay, UpdateSourceTrigger=LostFocus, Converter={StaticResource UnitConverter}, ConverterParameter=allownegative}" />
+                                <Label Grid.Column="1"
+                                       Padding="1 2 10 0" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                       Content="mm"
+                                       Foreground="{StaticResource ControlFillColorSecondaryBrush}" />
+                                <Label Grid.Column="4"
+                                       Padding="1 2 10 0" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                       Content="mm"
+                                       Foreground="{StaticResource ControlFillColorSecondaryBrush}" />
+                            </Grid>
+
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+
+            <TabItem x:Name="CustomGCode_Section" Style="{StaticResource CustomTabStyle}">
+                <TabItem.Header>
+                    <StackPanel Margin="5 0" Orientation="Horizontal">
+                        <ui:SymbolIcon Margin="0 0 6 0" Symbol="Document20" />
+                        <TextBlock loc:L.Context="Custom GCode Entries" loc:L.Value="Custom GCode" />
+                    </StackPanel>
+                </TabItem.Header>
+                <Grid loc:L.Context="Custom GCode Entries" TextOptions.TextFormattingMode="Display">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Separator Grid.Row="0" Margin="5" />
+                    <ScrollViewer Grid.Row="1"
+                                  Margin="-14 10 -14 0" Padding="25 0 25 0"
+                                  CanContentScroll="True" VerticalScrollBarVisibility="Auto">
+                        <Grid Margin="14 0" ColumnDefinitions="* 20 *" RowDefinitions="auto 20 auto 20 auto">
+
+                            <StackPanel Grid.Row="0" Grid.Column="0" >
+                                <Label Margin="0 0 0 0" loc:L.Value="Start GCode" FontWeight="SemiBold" />
+                                <TextBlock MinHeight="16" FontSize="12" LineHeight="16"
+                                           Foreground="{DynamicResource TextControlForegroundDisabled}" TextWrapping="Wrap"
+                                           loc:L.Value="Before initial positioning at the start of the job" />
+
+                                <ui:TextBox x:Name="StartGCodeTextBox"
+                                            Height="100"
+                                            Margin="0 5 0 0"
+                                            AcceptsReturn="True" ClearButtonEnabled="False" HorizontalScrollBarVisibility="Auto"
+                                            Text="{Binding MainVM.Printer.StartGCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            TextAlignment="Left" TextWrapping="NoWrap" VerticalScrollBarVisibility="Auto" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="0" Grid.Column="2">
+                                <Label Margin="0 0 0 0" FontWeight="SemiBold" VerticalAlignment="Center" loc:L.Value="End GCode" />
+                                <TextBlock MinHeight="16" FontSize="12" LineHeight="16"
+                                           Foreground="{DynamicResource TextControlForegroundDisabled}" TextWrapping="Wrap"
+                                           loc:L.Value="After the final lift to Travel Z at the end of the job" />
+
+                                <ui:TextBox x:Name="EndGCodeTextBox"
+                                            Height="100"
+                                            Margin="0 5 0 0"
+                                            AcceptsReturn="True" ClearButtonEnabled="False" HorizontalScrollBarVisibility="Auto"
+                                            Text="{Binding MainVM.Printer.EndGCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            TextAlignment="Left" TextWrapping="NoWrap" VerticalScrollBarVisibility="Auto" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="2" Grid.Column="0">
+                                <StackPanel.ToolTip>
+                                    <ToolTip loc:L.Value="Optional commands to activate a tool after moving to the work Z height, before cutting or drawing. Can be used to activate a laser/spindle or issue a custom 'pen down' GCode" />
+                                </StackPanel.ToolTip>
+                                <Label Margin="0 0 0 0" FontWeight="SemiBold" loc:L.Value="Tool On GCode" />
+                                <TextBlock MinHeight="16" FontSize="12" LineHeight="16"
+                                           Foreground="{DynamicResource TextControlForegroundDisabled}" TextWrapping="Wrap"
+                                           loc:L.Value="After reaching Work Z, activates before the draw step" />
+
+                                <ui:TextBox x:Name="ToolDownGCodeTextBox"
+                                            Height="100"
+                                            Margin="0 5 0 0"
+                                            AcceptsReturn="True" ClearButtonEnabled="False" HorizontalScrollBarVisibility="Auto"
+                                            Text="{Binding MainVM.Printer.ToolDownGCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            TextAlignment="Left" TextWrapping="NoWrap" VerticalScrollBarVisibility="Auto" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="2" Grid.Column="2">
+                                <StackPanel.ToolTip>
+                                    <ToolTip loc:L.Value="Optional commands to deactivate a tool before lifting or travelling, including initial positioning and job completion." />
+                                </StackPanel.ToolTip>
+                                <Label Margin="0 0 0 0" FontWeight="SemiBold" loc:L.Value="Tool Off GCode" />
+                                <TextBlock MinHeight="16" FontSize="12" LineHeight="16"
+                                           Foreground="{DynamicResource TextControlForegroundDisabled}" TextWrapping="Wrap"
+                                           loc:L.Value="After the draw step, before lifting or travel. Also runs at job start/end" />
+
+                                <ui:TextBox x:Name="ToolUpGCodeTextBox"
+                                            Height="100"
+                                            Margin="0 5 0 0"
+                                            AcceptsReturn="True" ClearButtonEnabled="False" HorizontalScrollBarVisibility="Auto"
+                                            Text="{Binding MainVM.Printer.ToolUpGCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            TextAlignment="Left" TextWrapping="NoWrap" VerticalScrollBarVisibility="Auto" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="4" Grid.Column="0">
+                                <StackPanel.ToolTip>
+                                    <ToolTip loc:L.Value="Start GCode used for the bounding-box preview" />
+                                </StackPanel.ToolTip>
+                                <Label Margin="0 0 0 0" FontWeight="SemiBold" VerticalAlignment="Center" loc:L.Value="Preview Start GCode" />
+                                <TextBlock MinHeight="16" FontSize="12" LineHeight="16"
+                                           Foreground="{DynamicResource TextControlForegroundDisabled}" TextWrapping="Wrap"
+                                           loc:L.Value="Before the bounding-box preview runs" />
+
+                                <ui:TextBox x:Name="PreviewStartGCodeTextBox"
+                                            Height="100"
+                                            Margin="0 5 0 0"
+                                            AcceptsReturn="True" ClearButtonEnabled="False" HorizontalScrollBarVisibility="Auto"
+                                            Text="{Binding MainVM.Printer.PreviewStartGCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            TextAlignment="Left" TextWrapping="NoWrap" VerticalScrollBarVisibility="Auto" />
+                            </StackPanel>
+                            <StackPanel Grid.Row="4" Grid.Column="2">
+                                <StackPanel.ToolTip>
+                                    <ToolTip loc:L.Value="End GCode used for the bounding-box preview" />
+                                </StackPanel.ToolTip>
+                                <Label Margin="0 0 0 0" FontWeight="SemiBold" VerticalAlignment="Center" loc:L.Value="Preview End GCode" />
+                                <TextBlock MinHeight="16" FontSize="12" LineHeight="16"
+                                           Foreground="{DynamicResource TextControlForegroundDisabled}" TextWrapping="Wrap"
+                                           loc:L.Value="After the bounding-box preview runs" />
+
+                                <ui:TextBox x:Name="PreviewEndGCodeTextBox"
+                                            Height="100"
+                                            Margin="0 5 0 0"
+                                            AcceptsReturn="True" ClearButtonEnabled="False" HorizontalScrollBarVisibility="Auto"
+                                            Text="{Binding MainVM.Printer.PreviewEndGCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            TextAlignment="Left" TextWrapping="NoWrap" VerticalScrollBarVisibility="Auto" />
+                            </StackPanel>
+                        </Grid>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</ui:FluentWindow>

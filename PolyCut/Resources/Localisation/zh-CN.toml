@@ -1,0 +1,450 @@
+﻿# PolyCut Localisation
+# @version 2
+# @programversion 0.11.0
+
+# ===================
+# Translations
+
+"8 character access code" = "8 位访问码"
+"A printer with the name '{0}' already exists. Do you want to overwrite it?" = "已存在名为“{0}”的打印机。要覆盖它吗？"
+"Access Code" = "访问码"
+"Accounts for pen width to keep enclosed shapes dimensionally accurate. Narrow features may disappear; open and unfilled paths are unchanged." = "计入笔宽，使封闭图形尺寸准确。窄小特征可能消失；开放和未填充路径不受影响。"
+"Adaptive Sampling" = "自适应采样"
+"Adaptive Sampling Sensitivity" = "自适应采样灵敏度"
+"Adaptive Sampling Window" = "自适应采样窗口"
+"Add Printer" = "添加打印机"
+"Added Preset" = "已添加预设"
+"Alignment" = "对齐"
+"Allow Travel in Outlines" = "允许在轮廓内移动"
+"An unknown error occurred" = "发生未知错误"
+"Arrange" = "排列"
+"Automatically quantizes the palette down to at most N colours. Set to 0 for no limit, or choose a value to restrict the number of colours used." = "自动将调色板量化到最多 N 种颜色。设为 0 不限制，或选一个值限制使用的颜色数量。"
+"Bambu Lab A1" = "Bambu Lab A1"
+"Bambu Lab A1 Connection" = "Bambu Lab A1 连接"
+"Bambu Lab A1 服务不可用" = "Bambu Lab A1 服务不可用" # LOC:TODO
+"Bed Dimensions" = "打印床尺寸"
+"Blade Settings" = "刀片设置"
+"Boolean operation failed." = "布尔运算失败。"
+"C_ut" = "剪切"
+"Cancel" = "取消"
+"Cancel Preview" = "取消预览"
+"Cancel regeneration" = "取消重新生成"
+"Cannot perform boolean operations on open paths. All shapes must be closed." = "无法对开放路径执行布尔运算。所有图形必须是封闭的。"
+"Cleans up toolpaths by merging extremely close vertices, fragments, and almost-collinear segments." = "通过合并极近的顶点、碎片和几乎共线的线段来清理路径。"
+"Click to view release notes and download" = "点击查看更新说明并下载"
+"Close" = "关闭"
+"Colour" = "颜色"
+"Combine" = "合并"
+"Combine Shapes" = "合并图形"
+"Compensates for material removed by the thickness of the blade, ensuring that wanted regions do not end up smaller than they should be. Can be useful if working on extremely small objects (e.g. PCB traces) with a cutting knife, or if using a laser to compensate for the laser width. Contours are offset by half this value." = "补偿刀片厚度去除的材料，确保目标区域不会偏小。在对极小的物体（如 PCB 走线）用雕刻刀切割时，或使用激光补偿激光宽度时会很有用。轮廓会偏移该值的一半。"
+"Controls how much the fill overlaps retained outlines. 0% touches their inner edge; 100% reaches their outer edge. Requires pen-width compensation and Keep Outlines." = "控制填充与保留轮廓的重叠程度。0% 接触其内缘；100% 到达其外缘。需要启用笔宽补偿和保留轮廓。"
+"Creating a new project will clear the current workspace. Continue?" = "新建项目将清空当前工作区。继续吗？"
+"Cursor Colour" = "光标颜色"
+"Curve simplification tolerance in pixels (try 0.5-2.5). Higher values simplify more aggressively at the cost of precision." = "曲线简化容差（像素，建议 0.5-2.5）。值越高简化越激进，但精度下降。"
+"Curve-fitting Precision" = "曲线拟合精度"
+"Cut Offset" = "切割偏移"
+"Cut level for the hierarchical watershed algorithm, 0-255. Higher values cut the region hierarchy at a finer level, producing more, smaller regions that follow content detail closely; lower values merge areas into fewer, larger regions." = "分层分水岭算法的切割层级，0-255。值越高层级越细，产生更多更小的区域，更贴合内容细节；值越低则合并为更少更大的区域。"
+"Cut lines will be placed at minimum this close to objects." = "切割线将至少与物体保持此距离。"
+"Darkest shading spacing" = "最深阴影线间距"
+"Default: {0}" = "默认：{0}"
+"Delete" = "删除"
+"Desired Exterior Margin" = "期望外边距"
+"Disabled" = "已禁用"
+"Discards detected patches smaller than this many pixels, 0-128. Increase this to clean up small stray specks and noise left over from tracing; decrease it to preserve fine detail." = "丢弃小于此像素数（0-128）的检测斑块。增大可清理描摹残留的小杂点；减小可保留精细细节。"
+"Draw Offset" = "绘制偏移"
+"Draw Outlines Before Fill" = "填充前绘制轮廓"
+"Drawing Group is already empty" = "绘图组已为空"
+"Drawing Line Colour" = "绘制线条颜色"
+"Drawing Settings" = "绘制设置"
+"Enable Pen Width Compensation" = "启用笔宽补偿"
+"Enabled" = "已启用"
+"Enter Printer Name" = "输入打印机名称"
+"Enter hex color (e.g., #FFFF0000 or #FF0000)" = "输入十六进制颜色（如 #FFFF0000 或 #FF0000）"
+"Error" = "错误"
+"Error Saving File" = "保存文件出错"
+"Experimental Renderer" = "实验性渲染器"
+"Export" = "导出"
+"Extract One Colour" = "提取单一颜色"
+"Failed to load language: {0}" = "加载语言失败：{0}"
+"Failed to load project" = "加载项目失败"
+"Failed to save project" = "保存项目失败"
+"File Saved" = "文件已保存"
+"File name: " = "文件名："
+"Fill" = "填充"
+"Fill / Outline Overlap" = "填充/轮廓重叠"
+"Fill Colour" = "填充颜色"
+"Fill Settings" = "填充设置"
+"Fill Style" = "填充样式"
+"Filters out and smooths blade traversal on noisy paths. This avoids overcompensating travel paths when a blade offset is set. Set to zero to disable." = "过滤并平滑有噪声路径上的刀片走线。设置刀片偏移时可避免过度补偿移动路径。设为 0 禁用。"
+"Finish Import" = "完成导入"
+"Fixed brightness cutoff (0-255) used for Black & White mode. Pixels darker than this value become foreground (black); pixels at or above it become background (white). Ignored when Adaptive Sampling is enabled." = "黑白模式使用的固定亮度阈值（0-255）。暗于此值的像素成为前景（黑）；等于或高于此值的成为背景（白）。启用自适应采样时忽略此值。"
+"GCode" = "GCode"
+"Generate" = "生成"
+"Generating ..." = "生成中..."
+"Generating..." = "生成中..."
+"Global Settings" = "全局设置"
+"Grid Settings" = "网格设置"
+"Gridline Colour" = "网格线颜色"
+"Group" = "组合"
+"Hardware" = "硬件"
+"Home" = "回零"
+"Host Address" = "主机地址"
+"How far to place the weeding box from the edges of objects" = "除草框距离物体边缘的距离"
+"Import as SVG" = "作为 SVG 导入"
+"Increasing the thickness will not affect the actual Gcode stroke width. However, setting it to zero will disable the stroke." = "增加粗细不会影响实际 G-code 的线宽。但设为 0 会禁用线条。"
+"Inset (Bottom)" = "内缩（下）"
+"Inset (Left)" = "内缩（左）"
+"Inset (Right)" = "内缩（右）"
+"Inset (Top)" = "内缩（上）"
+"Jog" = "点动"
+"Keep Outlines" = "保留轮廓"
+"Kerf Compensation" = "切口补偿"
+"Language Load Error" = "语言加载错误"
+"Lightest shading spacing" = "最浅阴影线间距"
+"Live status" = "实时状态"
+"Load Project" = "加载项目"
+"Loading a project will clear the current workspace. Continue?" = "加载项目将清空当前工作区。继续吗？"
+"Maximum Colours (0 = Unlimited)" = "最大颜色数（0 = 不限制）"
+"Maximum deviation when merging small features between nearly aligned segments. Set to zero to disable this cleanup." = "合并几乎共线的小特征时的最大偏差。设为 0 禁用此清理。"
+"Merge Angle" = "合并角度"
+"Merge Threshold" = "合并阈值"
+"Minimum Inter-Object Margin" = "物体间最小间距"
+"Minimum colour difference required between adjacent gradient layers, 0-255. Higher values merge similar shades into fewer, flatter colour bands; smaller values preserve smoother gradients with more distinct layers." = "相邻渐变层之间所需的最小色差，0-255。值越高会把相近色调合并为更少、更平的色带；值越小则保留更平滑的渐变和更多层次。"
+"New Project" = "新建项目"
+"No groups selected to ungroup" = "没有选中的组合可解散"
+"No intersection found. The selected shapes do not overlap." = "未找到交集。所选图形不重叠。"
+"No paths on canvas" = "画布上没有路径"
+"Noise Tolerance" = "噪声容差"
+"Number of Passes" = "走刀次数"
+"Number of decimal places used when writing path coordinates. Higher precision preserves shape accuracy at the cost of a longer processing times; lower precision is faster but can be coarser." = "写入路径坐标时使用的小数位数。精度越高越能保持形状准确，但处理时间更长；精度越低越快，但可能更粗糙。"
+"Number of significant bits kept per RGB channel, 1-8. Higher precision preserves subtle colour variation and more distinct clusters; lower precision merges similar colours together for a simpler, more posterised palette." = "每个 RGB 通道保留的有效位数，1-8。精度越高越能保留细微色彩变化和更多聚类；精度越低会把相近颜色合并，得到更简单、更海报化的调色板。"
+"Optimise Drawing Paths" = "优化绘制路径"
+"Overcut" = "过切"
+"Overwrite Printer?" = "覆盖打印机？"
+"Path Precision" = "路径精度"
+"Path Simplification" = "路径简化"
+"Pen Width" = "笔宽"
+"Pen height" = "笔高度"
+"Percentage below the local mean brightness a pixel must fall to be treated as foreground (default 15%). Higher sensitivity picks up subtler contrast changes; lower sensitivity requires stronger local contrast before a boundary is detected." = "像素亮度低于局部平均亮度多少比例才被视为前景（默认 15%）。灵敏度越高越能捕捉细微对比变化；越低则需要更强的局部对比才判定边界。"
+"Preview Page Settings" = "预览页设置"
+"Printer Configuration" = "打印机配置"
+"Printer Control" = "打印机控制"
+"Printer Name:" = "打印机名称："
+"Printer name is empty" = "打印机名称为空"
+"Printer not saved. Name already exists." = "打印机未保存。名称已存在。"
+"Printer serial number" = "打印机序列号"
+"Processing Settings" = "处理设置"
+"Project Loaded" = "项目已加载"
+"Project Saved" = "项目已保存"
+"Properties" = "属性"
+"Recent Items" = "最近项目"
+"Regenerate Weeding Boxes" = "重新生成除草框"
+"Regenerating..." = "重新生成中..."
+"Region Detection" = "区域检测"
+"Region Detection Settings" = "区域检测设置"
+"Reload Languages. Checks online for updated language definitions" = "重新加载语言。联网检查更新的语言定义"
+"Requires: {0}" = "需要：{0}"
+"Rotation" = "旋转"
+"SVG Exported" = "SVG 已导出"
+"S_ave As..." = "另存为..."
+"Save" = "保存"
+"Save GCode" = "保存 G-code"
+"Saved Preset" = "预设已保存"
+"Saved to: {0}" = "已保存到：{0}"
+"Scaling may not be correct" = "缩放可能不正确"
+"Select at least 2 shapes to combine" = "至少选择 2 个图形进行合并"
+"Select at least 2 shapes to group" = "至少选择 2 个图形进行组合"
+"Send Preview (A1)" = "发送预览（A1）"
+"Send to A1" = "发送到 A1"
+"Sends just the bounding box to the printer for preview, which runs in the travel height." = "只把包围盒发送到打印机做预览，在移动高度运行。"
+"Serial Number" = "序列号"
+"Shading Threshold" = "阴影阈值"
+"Shading angle" = "阴影角度"
+"Show Grid" = "显示网格"
+"Show Printer Working Area" = "显示打印机工作区"
+"Show Travel Moves" = "显示空走路径"
+"Simplify Toolpaths" = "简化路径"
+"Size in pixels of the local neighbourhood sampled when computing the adaptive threshold (0 = auto). Larger windows average over a bigger area for smoother results; smaller windows react more precisely to local lighting changes." = "计算自适应阈值时采样的局部邻域大小（像素，0 = 自动）。窗口越大平均范围越大、结果越平滑；窗口越小越能精确响应局部光照变化。"
+"Spacing" = "间距"
+"Speckle Filtering" = "杂点过滤"
+"Stacking" = "堆叠模式"
+"Start Menu Shortcut" = "开始菜单快捷方式"
+"Stroke" = "描边"
+"Stroke Colour" = "描边颜色"
+"Stroke Thickness" = "描边粗细"
+"Style" = "样式"
+"Subtraction resulted in an empty geometry. The shapes may not overlap or the result is fully subtracted." = "相减运算产生了空几何。图形可能不重叠，或结果被完全减去。"
+"The A1 must be in LAN Mode with Developer Mode enabled. The access code is the MQTT password (TLS, port 8883)." = "A1 必须处于局域网模式并启用开发者模式。访问码是 MQTT 密码（TLS，端口 8883）。"
+"This file no longer exists and has been removed from the list" = "该文件已不存在，已从列表中移除"
+"Threshold" = "阈值"
+"Tool Config" = "工具配置"
+"Tool Diameter" = "刀具直径"
+"Tool Offsets" = "工具偏移"
+"Toolhead Offset" = "工具头偏移"
+"Toolpath corners" = "刀路四角"
+"Tracing Mode" = "描摹模式"
+"Transform" = "变换"
+"Travel" = "移动"
+"Travel Line Colour" = "移动线条颜色"
+"Travel Speed" = "移动速度"
+"UI Language" = "界面语言"
+"Ungroup" = "解散组合"
+"Union operation resulted in an empty geometry. This should not happen." = "并集运算产生了空几何。这不应发生。"
+"Unknown SVG Unit Type: " = "未知 SVG 单位类型："
+"Update Available ▸ Version {0}" = "有可用更新 ▸ 版本 {0}"
+"Update Preview" = "更新预览"
+"Upload" = "上传"
+"Uploading ..." = "上传中..."
+"Uploads the G-code to the A1 over FTPS, then starts printing over MQTT." = "通过 FTPS 把 G-code 上传到 A1，然后通过 MQTT 开始打印。"
+"Used when objects are close to each other and you want the generator to place a weeding cut between them." = "当物体彼此靠近时使用，生成器会在它们之间放置除草切割。"
+"Useful to clean up tiny nodes extra nodes on otherwise straight lines that could introduce micro bends that affect quality." = "用于清理本应平直线上的微小多余节点，这些节点可能引入影响质量的微弯。"
+"Uses adaptive thresholding instead of a single fixed cutoff. Ideal for scans or photos with uneven lighting, since the threshold is recalculated locally across the image rather than applied globally." = "使用自适应阈值而不是单一固定阈值。适合光照不均的扫描件或照片，因为阈值会在整幅图像上局部重新计算，而不是全局应用。"
+"Weeding Box Options" = "除草框选项"
+"Weeding Boxes" = "除草框"
+"Work" = "工作"
+"Work Speed" = "工作速度"
+"Working Area" = "工作区"
+"Workspace cleared" = "工作区已清空"
+"XOR operation resulted in an empty geometry. The shapes may be identical." = "异或运算产生了空几何。图形可能完全相同。"
+"Z Height" = "Z 高度"
+"Z Offset Per Pass" = "每次走刀 Z 偏移"
+"_Copy" = "复制"
+"_Edit" = "编辑"
+"_Export As SVG..." = "导出为 SVG..."
+"_File" = "文件"
+"_Import SVG/Image..." = "导入 SVG/图片..."
+"_Load Project" = "加载项目"
+"_Paste" = "粘贴"
+"_Save" = "保存"
+"_Select All" = "全选"
+"_View" = "视图"
+"version" = "版本"
+"上传文件名" = "上传文件名" # LOC:TODO
+"保留当前内容" = "保留当前内容" # LOC:TODO
+"发送到 A1 失败" = "发送到 A1 失败" # LOC:TODO
+"取消" = "取消" # LOC:TODO
+"导出 G-code 文件..." = "导出 G-code 文件..." # LOC:TODO
+"已上传 {0} 到 {1}，请在打印机屏幕上手动启动" = "已上传 {0} 到 {1}，请在打印机屏幕上手动启动" # LOC:TODO
+"已发送到 A1" = "已发送到 A1" # LOC:TODO
+"未配置打印机" = "未配置打印机" # LOC:TODO
+"清空并打开" = "清空并打开" # LOC:TODO
+"清空并新建" = "清空并新建" # LOC:TODO
+"适应窗口" = "适应窗口" # LOC:TODO
+
+[context."3D Printer Host Type and address"]
+"Host Type" = "主机类型"
+
+[context."3D Printer/Machine"]
+"Printer" = "打印机"
+
+[context."Allow Travel in Outlines Tooltip"]
+"Allows the pen to travel through shape outlines without lifting the pen up to start the next line." = "允许笔在图形轮廓内移动而不抬笔开始下一行。"
+"Requires \"Optimise Drawing Paths\" to be enabled. Can massively improve overall speed" = "需要启用“优化绘制路径”。可大幅提升整体速度"
+
+[context."Arrange objects on canvas"]
+"Bring Forward" = "上移一层"
+"Bring To Front" = "移到最前"
+"Send Backwards" = "下移一层"
+"Send To Back" = "移到最后"
+
+[context."Bambu Lab A1 Connection"]
+"Access Code" = "访问码"
+"Host Address" = "主机地址"
+"Serial Number" = "序列号"
+
+[context."Bitmap to SVG Keyboard Controls Guide"]
+"Alt Key" = "Alt 键"
+"Controls" = "控制"
+"Ctrl + Click" = "Ctrl + 单击"
+"Ctrl + Hover" = "Ctrl + 悬停"
+"Ctrl + Shift + Click" = "Ctrl + Shift + 单击"
+"Enables/Disables ALL regions that match the colour of the region under the cursor" = "启用/禁用所有与光标下区域颜色相同的区域"
+"Enables/Disables the shape region under the cursor, dictating whether it will be included in the import" = "启用/禁用光标下的区域，决定是否包含在导入中"
+"Highlights the shape region under the cursor" = "高亮光标下的区域"
+"Note: You may need to reduce the 'Maximum Colours' setting if not all expected regions are enabled/disabled" = "注意：如果预期的区域没有全部启用/禁用，可能需要降低“最大颜色数”设置"
+"Shows an overlay of the original image" = "显示原图叠加"
+
+[context."Boolean Operations"]
+"Exclude" = "排除"
+"Intersect" = "交集"
+"Subtract" = "相减"
+"Union" = "并集"
+
+[context."Clipboard Actions"]
+"Copy" = "复制"
+"Cut" = "剪切"
+"Paste" = "粘贴"
+"Select All" = "全选"
+
+[context."Curve-fitting Precision Tooltip"]
+"Curved lines are approximated as straight lines when converted to GCode. This sets the effective smallest length that each segment of the curve should be. Smaller values increase accuracy, but massively increase processing time." = "转换为 GCode 时曲线会被近似为直线。此值设定每段曲线的最小长度。值越小精度越高，但处理时间大幅增加。"
+
+[context."Custom GCode Entries"]
+"After reaching Work Z, activates before the draw step" = "到达工作 Z 后、绘制步骤开始前执行"
+"After the bounding-box preview runs" = "包围盒预览运行后"
+"After the draw step, before lifting or travel. Also runs at job start/end" = "绘制步骤后、抬起或移动前执行。任务开始/结束时也会执行"
+"After the final lift to Travel Z at the end of the job" = "任务结束时最终抬到移动 Z 后执行"
+"Before initial positioning at the start of the job" = "任务开始时初始定位之前执行"
+"Before the bounding-box preview runs" = "包围盒预览运行前"
+"Custom GCode" = "自定义 GCode"
+"End GCode" = "结束 GCode"
+"End GCode used for the bounding-box preview" = "用于包围盒预览的结束 GCode"
+"Optional commands to activate a tool after moving to the work Z height, before cutting or drawing. Can be used to activate a laser/spindle or issue a custom 'pen down' GCode" = "可选命令：在移动到工作 Z 高度后、切割或绘制前激活工具。可用于启动激光/主轴或发送自定义“落笔”GCode"
+"Optional commands to deactivate a tool before lifting or travelling, including initial positioning and job completion." = "可选命令：在抬起或移动前停用工具，包括初始定位和任务完成时。"
+"Preview End GCode" = "预览结束 GCode"
+"Preview Start GCode" = "预览开始 GCode"
+"Start GCode" = "开始 GCode"
+"Start GCode used for the bounding-box preview" = "用于包围盒预览的开始 GCode"
+"Tool Off GCode" = "工具关闭 GCode"
+"Tool On GCode" = "工具开启 GCode"
+
+[context."Darkest Shading Spacing Tooltip"]
+"How far apart drawn lines should be when shading the darkest parts of the image." = "绘制图像最暗部分阴影时的线条间距。"
+
+[context."Drawing/shape elements"]
+"Elements" = "元素"
+
+[context."Extract One Colour Tooltip"]
+"Processes only objects with the specified colour, and ignores all others." = "只处理指定颜色的对象，忽略其他所有对象。"
+
+[context."Fill Style Tooltip"]
+"The method used to fill shapes" = "填充图形使用的方法"
+
+[context."Font Styling"]
+"Font" = "字体"
+"Size (pt)" = "字号（pt）"
+
+[context."Grid Settings"]
+"Canvas Color" = "画布颜色"
+
+[context."Home Tab"]
+"Home" = "主页"
+
+[context."Keep Outlines Tooltip"]
+"Disable this if you want to shade in an area without the area being outlined." = "如果想在区域内填充阴影而不描边，请禁用此项。"
+"Whether shape outlines should be drawn, or ignored." = "是否绘制图形轮廓。"
+
+[context."Lightest Shading Spacing Tooltip"]
+"How far apart drawn lines should be when shading the lightest parts of the image." = "绘制图像最亮部分阴影时的线条间距。"
+
+[context."Merge Angle Tooltip"]
+"Angle (in degrees) between two lines, below which we merge them into a single straight line. Increasing this value (~1-5) can help when using a cutter, as it reduces the frequency of corrective swivels being made that could cause tearing." = "两条线之间的夹角（度），低于此角度时合并为一条直线。增大该值（约 1-5）对切割有帮助，可减少可能造成撕裂的纠正旋转次数。"
+
+[context."New Project"]
+"_New" = "新建"
+
+[context."Number of Passes Tooltip"]
+"How many times the tool should pass over the same area. Multiple passes can be used to cut/draw deeper or darker, or to improve quality by going over the same path multiple times." = "工具在同一区域重复走刀的次数。多次走刀可切/画得更深或更黑，或通过重复路径提升质量。"
+
+[context."Optimise Drawing Paths Tooltip"]
+"Optimises the order in which lines are drawn to minimise travel time." = "优化线条绘制顺序以缩短移动时间。"
+"Particularly useful for ordering lines when filling shapes." = "在填充图形时对线条排序尤其有用。"
+
+[context."Outlines Before Fill Tooltip"]
+"Draws the outlines of shapes before filling them in." = "先绘制图形轮廓，再进行填充。"
+"Usually you want to draw outlines after filling." = "通常建议在填充之后再绘制轮廓。"
+
+[context."Overcut Tooltip"]
+"Extends cuts by the specified amount to compensate for cutting moves ending slightly too early." = "将切割延长指定量，以补偿切割动作略微提前结束。"
+"Recommended value ~1mm" = "推荐值约 1mm"
+
+[context."Preview Tab"]
+"Preview" = "预览"
+
+[context."Preview toolpath animation"]
+"Preview" = "预览"
+
+[context."Printer Bed"]
+"Bed Dimensions" = "打印床尺寸"
+
+[context."RegionDetection Tooltip"]
+"Black & White - Uses a single threshold to collapse the image into two tones. More useful for scanned paper." = "黑白 - 使用单一阈值把图像压缩为两种色调。更适合扫描纸张。"
+"Chooses the algorithm used to form regions before tracing." = "选择描摹前用于形成区域的算法。"
+"Colour Cluster - Groups pixels of similar colour together to determine boundaries" = "颜色聚类 - 将相似颜色的像素分组以确定边界"
+"Default = Colour Clustering" = "默认 = 颜色聚类"
+"Watershed - uses a hierarchical algorithm to form content-adaptive regions that closely follow object shape." = "分水岭 - 使用分层算法形成贴合物体形状的内容自适应区域。"
+
+[context."SVG Path /Shape Details"]
+"Exclusions" = "排除项"
+"Nodes" = "节点"
+"Shapes" = "图形"
+
+[context."Shading Angle Tooltip"]
+"0° represents East, with positive values rotating counterclockwise." = "0° 表示东方，正值逆时针旋转。"
+"Which Direction to draw when shading objects." = "填充物体阴影时的绘制方向。"
+
+[context."Shading Threshold Tooltip"]
+"How bright an object should be in order to be shaded. 0 = shade all objects, 1 = shade only fully bright objects." = "物体需要多亮才会被填充阴影。0 = 填充所有物体，1 = 只填充全亮的物体。"
+"Range = 0 to 1" = "范围 = 0 到 1"
+
+[context."Stacking Mode Tooltip"]
+" NOTE: " = " 注意："
+" Tracing mode = spline." = " 描摹模式 = 样条。"
+"Controls how the detected regions are layered on top of one another." = "控制检测到的区域如何相互叠加。"
+"Cutout - " = "镂空 - "
+"Cutout V2 - " = "镂空 V2 - "
+"Cutout will cause a ripple/oscillating effect visible along edges. This is a VTracer bug for now. If the ripples are too obvious, correct them with Path Simplification or use the Stacked option instead. " = "镂空模式会在边缘产生可见的波纹/振荡效果。这是 VTracer 目前的缺陷。如果波纹太明显，可用路径简化修正，或改用堆叠模式。"
+"Layers each region as a separate overlapping shape, like sheets of coloured paper. Can provide the cleanest edges to shapes, but can require a lot more cleanup effort after import." = "把每个区域作为独立的重叠图形分层，像彩色纸片一样。图形的边缘最干净，但导入后可能需要更多清理。"
+"Produces a true seam-free mosaic, avoiding overlaps or visible seams between regions." = "生成真正的无缝马赛克，避免区域间的重叠或可见接缝。"
+"Same as Cutout, but with my own attempt at fixing the ripple/oscillating effect in VTracer. Only works with" = "与镂空相同，但尝试修复了 VTracer 的波纹/振荡效果。仅适用于"
+"Stacked - " = "堆叠 - "
+"Stacking (Default = Cutout)" = "堆叠模式（默认 = 镂空）"
+
+[context."Tool Diameter Tooltip"]
+"Most blades are ~1mm in diameter, however the point of the blade may not be at the very edge." = "大多数刀片直径约 1mm，但刀尖可能不在最边缘。"
+"Setting the tool diameter correctly adds a compensatory swivel for blade rotation to align with the next move. This is most noticeable on tiny features." = "正确设置刀具直径会为刀片旋转添加补偿旋转，使其对准下一步移动。在微小特征上最明显。"
+"of the swivelling part of the cutting blade." = "切割刀片旋转部分的。"
+
+[context."Tool Mode"]
+"Cut" = "切割"
+"Draw" = "绘制"
+
+[context."Tool Mode Tooltip"]
+"Settings designed for cutting objects out using a drag-knife." = "为使用拖刀切割物体而设计的设置。"
+"Settings designed for drawing using a pen, marker, or even a foil stamping pen." = "为使用笔、马克笔甚至烫金笔绘制而设计的设置。"
+
+[context."Tool Offsets Tooltip"]
+"Installation offset of the cutting tool on the X axis. This is added on top of the Toolhead Offset." = "切割工具在 X 轴上的安装偏移。会叠加在工具头偏移之上。"
+"Installation offset of the cutting tool on the Y axis. This is added on top of the Toolhead Offset." = "切割工具在 Y 轴上的安装偏移。会叠加在工具头偏移之上。"
+"Installation offset of the drawing tool on the X axis. This is added on top of the Toolhead Offset." = "绘制工具在 X 轴上的安装偏移。会叠加在工具头偏移之上。"
+"Installation offset of the drawing tool on the Y axis. This is added on top of the Toolhead Offset." = "绘制工具在 Y 轴上的安装偏移。会叠加在工具头偏移之上。"
+
+[context."Tool Speed Tooltip"]
+"Slower is usually better" = "通常越慢越好"
+"Speed of the toolhead when the tool is down and cutting/drawing." = "工具落下进行切割/绘制时的工具头速度。"
+
+[context."TracingMode Tooltip"]
+"Fits edges using smooth curves for organic outlines." = "用平滑曲线拟合边缘，适合有机轮廓。"
+"Keeps hard, blocky pixel-edge outlines with no curve fitting. Great for pixel art" = "保留硬朗的像素块状边缘，不做曲线拟合。适合像素画"
+"Pixel - " = "像素 - "
+"Polygon - " = "多边形 - "
+"Sets the curve-fitting style used to outline each region." = "设置描摹各区域轮廓时使用的曲线拟合方式。"
+"Spline - " = "样条 - "
+"Tracing Mode (Default = Spline)" = "描摹模式（默认 = 样条）"
+"Uses straight line segments" = "使用直线段"
+
+[context."Travel Speed ToolTip"]
+"Speed of the toolhead when the tool is raised and not actively cutting/drawing." = "工具抬起、未切割/绘制时的工具头速度。"
+
+[context."Z Height Tooltip"]
+"How high above the workpiece the toolhead should be positioned when travelling or drawing." = "移动或绘制时工具头应高于工件的高度。"
+"Positive values are offset above the bed surface." = "正值表示高于床面。"
+"This value is affected by your printer's Z-Offset." = "此值受打印机 Z 偏移影响。"
+
+[context."Z Offset Per Pass Tooltip"]
+"For cutting or engraving thicker materials, a slightly negative value can be used to gradually cut deeper with each pass, which can improve quality and reduce the chance of blade breakage." = "切割或雕刻较厚材料时，可用略负的值在每次走刀时逐渐切得更深，从而提升质量并降低断刀风险。"
+"Positive values move the tool up after each pass, while negative values move the tool down after each pass." = "正值表示每次走刀后工具上移，负值表示下移。"
+"The distance in Z that the tool should move after each pass when multiple passes are enabled." = "启用多次走刀时，每次走刀后工具在 Z 方向移动的距离。"
+
+[obsolete]
+"Automatically Begin Printing" = "自动开始打印"
+"No" = "否"
+"No printer is configured" = "未配置打印机"
+"Nothing to preview, generate the G-code first" = "没有可预览的内容，请先生成 G-code"
+"Preview uploaded to {0}" = "预览已上传到 {0}"
+"Send to A1 failed" = "发送到 A1 失败"
+"Sent to A1" = "已发送到 A1"
+"The Bambu Lab A1 service is not available" = "Bambu Lab A1 服务不可用"
+"Upload to A1 failed" = "上传到 A1 失败"
+"Uploaded {0} to {1}" = "已将 {0} 上传到 {1}"
+"Yes" = "是"

@@ -1,0 +1,529 @@
+Imports System.Data
+Imports System.Globalization
+Imports System.Reflection
+Imports System.Text.RegularExpressions
+
+Imports PolyCut.Core
+Imports PolyCut.Shared
+
+
+
+Public Class InputToMillimetresConverter
+    Implements IValueConverter
+
+    Public Function Convert(value As Object, targetType As Type, parameter As Object, culture As CultureInfo) As Object Implements IValueConverter.Convert
+        If value IsNot Nothing AndAlso IsNumeric(value) AndAlso CStr(value).ToLower <> "nan" Then
+            Return Math.Round(CDec(value), 2)
+        End If
+        Return 0
+    End Function
+
+    Public Function ConvertBack(value As Object, targetType As Type, parameter As Object, culture As CultureInfo) As Object Implements IValueConverter.ConvertBack
+
+        Dim input As String = TryCast(value, String)
+
+        If input Is Nothing Then
+            Return DependencyProperty.UnsetValue
+        End If
+        input = input.Replace(" ", "")
+        Dim operators = New List(Of Char) From {"+", "-", "*", "/"}
+
+        If operators.Exists(Function(op) input.Contains(op)) Then
+
+            Dim resultArray As String() = Regex.Split(input, $"({String.Join("|", "\+", "-", "\*", "/")})")
+
+            For i = 0 To resultArray.Length - 1
+                If Not operators.Contains(resultArray(i)) Then
+                    resultArray(i) = CStr(UnitConverter(resultArray(i)))
+                End If
+            Next
+
+
+
+            Dim expression As String = String.Join("", resultArray)
+
+            Try
+                Dim dataTable As New DataTable()
+                Dim result As Object = dataTable.Compute(expression, String.Empty)
+                Debug.WriteLine(result)
+                input = result
+            Catch ex As Exception
+                ' Handle invalid expressions or other exceptions
+                Debug.WriteLine("error")
+                Return DependencyProperty.UnsetValue
+            End Try
+
+        End If
+
+        Dim convertedDecimal As Decimal = UnitConverter(input)
+
+        If convertedDecimal = 0D AndAlso (CStr(parameter) <> "allowzero" AndAlso CStr(parameter) <> "allownegative") Then
+            Return DependencyProperty.UnsetValue
+        End If
+        If convertedDecimal < 0D AndAlso CStr(parameter) <> "allownegative" Then
+            Return DependencyProperty.UnsetValue
+        End If
+
+
+
+        If targetType Is GetType(Double) OrElse targetType Is GetType(Double?) Then
+            Return CDbl(convertedDecimal)
+        End If
+
+        If targetType Is GetType(Decimal) OrElse targetType Is GetType(Decimal?) Then
+            Return convertedDecimal
+        End If
+
+        Return CDbl(convertedDecimal)
+
+
+    End Function
+
+    Private Shared Function UnitConverter(value As String) As Decimal
+        value = value.ToLower.Trim
+        If Not IsNumeric(value) Then
+            If value.EndsWith("in") OrElse value.EndsWith("inches") Then
+                value = ExtractDecimalNumber(value)
+                value *= 25.4
+            ElseIf value.EndsWith("cm") OrElse value.EndsWith("centimetres") Then
+                value = ExtractDecimalNumber(value)
+                value *= 10
+            ElseIf value.EndsWith("mm") OrElse value.EndsWith("millimetres") Then
+                value = ExtractDecimalNumber(value)
+            Else
+                value = ExtractDecimalNumber(value)
+            End If
+        End If
+
+        Return Math.Round(CDbl(value), 4)
+
+    End Function
+
+    Private Shared Function ExtractDecimalNumber(Input As String) As Decimal
+
+        Dim pattern As String = "[-+]?\d*\.?\d+([eE][-+]?\d+)?"
+
+        Dim match As Match = Regex.Match(Input, pattern)
+
+        If match.Success Then
+            Dim matchedValue As String = match.Value
+
+            Dim parsedValue As Decimal
+            If Decimal.TryParse(matchedValue, NumberStyles.Any, CultureInfo.InvariantCulture, parsedValue) Then
+                Return parsedValue
+            End If
+        End If
+
+        Return Nothing
+    End Function
+
+End Class
+
+
+
+Public Class AnimationFactorToValueConverter
+    Implements IMultiValueConverter
+
+    Public Function Convert(values() As Object, targetType As Type, parameter As Object, culture As CultureInfo) As Object Implements IMultiValueConverter.Convert
+        If TypeOf values(0) IsNot Double Then
+            Return 0.0
+        End If
+
+        Dim completeValue As Double = DirectCast(values(0), Double)
+
+        If TypeOf values(1) IsNot Double Then
+            Return 0.0
+        End If
+
+        Dim factor As Double = DirectCast(values(1), Double)
+
+        If parameter IsNot Nothing AndAlso parameter.ToString() = "negative" Then
+            factor = -factor
+        End If
+
+        Return factor * completeValue
+    End Function
+
+    Public Function ConvertBack(value As Object, targetTypes() As Type, parameter As Object, culture As CultureInfo) As Object() Implements IMultiValueConverter.ConvertBack
+        Throw New NotImplementedException()
+    End Function
+End Class
+
+Public Class InverseBoolToVisConverter
+    Implements IValueConverter
+
+    Public Function Convert(value As Object, targetType As Type, parameter As Object, culture As CultureInfo) As Object Implements IValueConverter.Convert
+
+        If CBool(value) Then
+            Return Visibility.Hidden
+        End If
+
+        Return Visibility.Visible
+
+    End Function
+
+    Public Function ConvertBack(value As Object, targetType As Type, parameter As Object, culture As CultureInfo) As Object Implements IValueConverter.ConvertBack
+
+        If CBool(value) Then
+            Return Visibility.Hidden
+        End If
+
+        Return Visibility.Visible
+
+    End Function
+
+End Class
+
+
+
+Public Class InverseBoolConverter
+    Implements IValueConverter
+
+    Public Function Convert(value As Object, targetType As Type, parameter As Object, culture As CultureInfo) As Object Implements IValueConverter.Convert
+
+        Return Not CBool(value)
+    End Function
+
+    Public Function ConvertBack(value As Object, targetTypes As Type, parameter As Object, culture As CultureInfo) As Object Implements IValueConverter.ConvertBack
+        Throw New NotImplementedException
+    End Function
+
+End Class
+
+
+
+''' <summary>
+''' Display name for a font in the picker. Bundled single-line fonts get a short,
+''' unmistakable "单线 ·" name: the full "PolyCut Hershey Script Simplex" is both
+''' ambiguous at a glance and clipped by the 200px picker, and whether a font is
+''' single-line decides whether the plot is one pass or two.
+''' </summary>
+Public Class FontDisplayNameConverter
+    Implements IValueConverter
+
+    Private Const HersheyPrefix As String = "PolyCut Hershey "
+
+    Public Function Convert(value As Object, targetType As Type, parameter As Object, culture As CultureInfo) As Object Implements IValueConverter.Convert
+        Dim source = TryCast(value, String)
+        If String.IsNullOrEmpty(source) Then Return source
+
+        Dim hashIndex = source.LastIndexOf("#"c)
+        Dim name = If(hashIndex >= 0 AndAlso hashIndex < source.Length - 1, source.Substring(hashIndex + 1), source)
+
+        If name.StartsWith(HersheyPrefix, StringComparison.OrdinalIgnoreCase) Then
+            Return "单线 · " & name.Substring(HersheyPrefix.Length)
+        End If
+
+        Return name
+    End Function
+
+    Public Function ConvertBack(value As Object, targetType As Type, parameter As Object, culture As CultureInfo) As Object Implements IValueConverter.ConvertBack
+        Return Binding.DoNothing
+    End Function
+End Class
+
+Public Class FontNameConverter
+    Implements IValueConverter
+
+    ''' <summary>
+    ''' Bundled fonts are referenced as "C:\...\Resources\Fonts\#Family Name", so the raw
+    ''' Source shows a full path in the picker. Show just the family name to the user.
+    ''' </summary>
+    Public Function Convert(value As Object, targetType As Type, parameter As Object, culture As CultureInfo) As Object Implements IValueConverter.Convert
+        Dim source = TryCast(value, String)
+        If String.IsNullOrEmpty(source) Then Return source
+
+        Dim hashIndex = source.LastIndexOf("#"c)
+        If hashIndex >= 0 AndAlso hashIndex < source.Length - 1 Then
+            Return source.Substring(hashIndex + 1)
+        End If
+
+        Return source
+    End Function
+
+    Public Function ConvertBack(value As Object, targetType As Type, parameter As Object, culture As CultureInfo) As Object Implements IValueConverter.ConvertBack
+        Return Binding.DoNothing
+    End Function
+End Class
+
+Public Class RadioButtonConverter
+    Implements IValueConverter
+
+    Public Function Convert(value As Object, targetType As Type, parameter As Object, culture As CultureInfo) As Object Implements IValueConverter.Convert
+        ' ToolMode is a plain enum (Cut = 0, Draw = 1), not a [Flags] enum.
+        ' HasFlag would return True for every entry when parameter is 0 (ToolMode.Cut),
+        ' which left both the Cut and Draw buttons looking selected.
+        Return CType(value, ProcessorConfiguration.ToolMode) = CType(parameter, ProcessorConfiguration.ToolMode)
+    End Function
+
+    Public Function ConvertBack(value As Object, targetType As Type, parameter As Object, culture As CultureInfo) As Object Implements IValueConverter.ConvertBack
+        Return If(value.Equals(True), parameter, Binding.DoNothing)
+    End Function
+End Class
+
+
+
+Public Class ComparisonConverter
+    Implements IValueConverter
+
+    Public Function Convert(value As Object, targetType As Type, parameter As Object, culture As System.Globalization.CultureInfo) As Object Implements IValueConverter.Convert
+        Return value?.Equals(parameter)
+    End Function
+
+    Public Function ConvertBack(value As Object, targetType As Type, parameter As Object, culture As System.Globalization.CultureInfo) As Object Implements IValueConverter.ConvertBack
+        If value?.Equals(True) Then
+            Return parameter
+        Else
+            Return Binding.DoNothing
+        End If
+    End Function
+End Class
+
+
+Public Class CanvasToolModeCursorConverter
+    Implements IValueConverter
+
+    Public Function Convert(value As Object, targetType As Type, parameter As Object, culture As System.Globalization.CultureInfo) As Object Implements IValueConverter.Convert
+        Dim toolMode As CanvasMode = CType(value, CanvasMode)
+        Dim cursor As String = "Arrow"
+
+        Select Case toolMode
+            Case CanvasMode.Selection
+                cursor = "Arrow"
+            Case CanvasMode.Text
+                cursor = "IBeam"
+            Case Else
+                cursor = "Cross"
+        End Select
+
+        Return cursor
+    End Function
+
+    Public Function ConvertBack(value As Object, targetType As Type, parameter As Object, culture As System.Globalization.CultureInfo) As Object Implements IValueConverter.ConvertBack
+        Throw New NotImplementedException()
+    End Function
+End Class
+
+
+
+
+
+
+
+Public Class CountEqualsOneToBoolConverter
+    Implements IValueConverter
+    Public Function Convert(value As Object, targetType As Type, parameter As Object, culture As CultureInfo) As Object Implements IValueConverter.Convert
+        If TypeOf value Is Integer Then
+            Return CInt(value) = 1
+        End If
+        Return False
+    End Function
+    Public Function ConvertBack(value As Object, targetType As Type, parameter As Object, culture As CultureInfo) As Object Implements IValueConverter.ConvertBack
+        Throw New NotSupportedException()
+    End Function
+End Class
+
+
+Public Class BrushToHexStringConverter : Inherits Markup.MarkupExtension
+    Implements IValueConverter
+
+    Public Overrides Function ProvideValue(serviceProvider As IServiceProvider) As Object
+        Return Me
+    End Function
+
+    Public Function Convert(value As Object, targetType As Type, parameter As Object, culture As CultureInfo) As Object _
+        Implements IValueConverter.Convert
+
+        If value Is Nothing Then Return Nothing
+
+        ' ---- Target is Brush: accept Brush or String and return Brush ----
+        If GetType(Brush).IsAssignableFrom(targetType) Then
+            If TypeOf value Is Brush Then
+                Return DirectCast(value, Brush)
+            End If
+
+            If TypeOf value Is String Then
+                Dim s = DirectCast(value, String).Trim()
+                If s.Length = 0 Then Return Nothing
+                If Not s.StartsWith("#") Then s = "#" & s
+
+                Try
+                    Dim conv As New BrushConverter()
+                    Return DirectCast(conv.ConvertFromString(Nothing, culture, s), Brush)
+                Catch
+                    Return Binding.DoNothing
+                End Try
+            End If
+
+            Return Binding.DoNothing
+        End If
+
+        If targetType Is GetType(String) Then
+            Dim scb = TryCast(value, SolidColorBrush)
+            If scb IsNot Nothing Then
+                Dim c = scb.Color
+                Return $"#{c.A:X2}{c.R:X2}{c.G:X2}{c.B:X2}"
+            End If
+
+            If TypeOf value Is Brush Then
+                Try
+                    Dim conv As New BrushConverter()
+                    Return conv.ConvertToString(Nothing, culture, value)
+                Catch
+                    Return Nothing
+                End Try
+            End If
+
+            Return Nothing
+        End If
+
+        ' Unknown target type
+        Return Binding.DoNothing
+    End Function
+
+    Public Function ConvertBack(value As Object, targetType As Type, parameter As Object, culture As CultureInfo) As Object _
+        Implements IValueConverter.ConvertBack
+
+        If value Is Nothing Then Return Nothing
+
+        If GetType(Brush).IsAssignableFrom(targetType) Then
+            If TypeOf value Is Brush Then
+                Return DirectCast(value, Brush)
+            End If
+
+            If TypeOf value Is String Then
+                Dim s = DirectCast(value, String).Trim()
+                If s.Length = 0 Then Return Nothing
+                If Not s.StartsWith("#"c) Then s = "#" & s
+
+                Try
+                    Dim conv As New BrushConverter()
+                    Return DirectCast(conv.ConvertFromString(Nothing, culture, s), Brush)
+                Catch
+                    Return Binding.DoNothing
+                End Try
+            End If
+
+            Return Binding.DoNothing
+        End If
+
+        If targetType Is GetType(String) Then
+            If TypeOf value Is String Then Return DirectCast(value, String)
+
+            Dim scb = TryCast(value, SolidColorBrush)
+            If scb IsNot Nothing Then
+                Dim c = scb.Color
+                Return $"#{c.A:X2}{c.R:X2}{c.G:X2}{c.B:X2}"
+            End If
+
+            If TypeOf value Is Brush Then
+                Try
+                    Dim conv As New BrushConverter()
+                    Return conv.ConvertToString(Nothing, culture, value)
+                Catch
+                    Return Binding.DoNothing
+                End Try
+            End If
+
+            Return Binding.DoNothing
+        End If
+
+        Return Binding.DoNothing
+    End Function
+End Class
+
+
+
+Public Class RectFromSizeConverter : Inherits Markup.MarkupExtension
+    Implements IMultiValueConverter
+
+    Public Function Convert(values As Object(), targetType As System.Type, parameter As Object, culture As CultureInfo) As Object Implements IMultiValueConverter.Convert
+        Dim w As Double = 0
+        Dim h As Double = 0
+
+        If values IsNot Nothing AndAlso values.Length > 0 AndAlso TypeOf values(0) Is Double Then
+            w = CDbl(values(0))
+        End If
+        If values IsNot Nothing AndAlso values.Length > 1 AndAlso TypeOf values(1) Is Double Then
+            h = CDbl(values(1))
+        End If
+
+        Return New Rect(0, 0, Math.Max(0, w), Math.Max(0, h))
+    End Function
+
+    Public Function ConvertBack(value As Object, targetTypes() As Type, parameter As Object, culture As CultureInfo) As Object() Implements IMultiValueConverter.ConvertBack
+        Throw New NotImplementedException()
+    End Function
+
+    Public Overrides Function ProvideValue(serviceProvider As IServiceProvider) As Object
+        Return Me
+    End Function
+End Class
+
+Public Class EnumToDescriptionConverter : Inherits Markup.MarkupExtension
+    Implements IValueConverter
+
+    Public Function Convert(value As Object, targetType As Type, parameter As Object, culture As CultureInfo) As Object Implements IValueConverter.Convert
+        If value Is Nothing OrElse Not value.GetType().IsEnum Then Return value
+
+        Dim field = value.GetType().GetField(value.ToString())
+        Dim attr = field?.GetCustomAttribute(Of ComponentModel.DescriptionAttribute)()
+
+        Return If(attr IsNot Nothing, attr.Description, value.ToString())
+    End Function
+
+    Public Function ConvertBack(value As Object, targetType As Type, parameter As Object, culture As CultureInfo) As Object Implements IValueConverter.ConvertBack
+        Throw New NotSupportedException()
+    End Function
+
+    Public Overrides Function ProvideValue(serviceProvider As IServiceProvider) As Object
+        Return Me
+    End Function
+End Class
+
+Public Class IconBrushConverter : Inherits Markup.MarkupExtension
+    Implements System.Windows.Data.IMultiValueConverter
+
+    Public Function Convert(values As Object(), targetType As Type, parameter As Object, culture As CultureInfo) As Object Implements System.Windows.Data.IMultiValueConverter.Convert
+        ' values(0) = the drawable's Fill, values(1) = its Stroke
+        If IsUsableBrush(values(0)) Then Return values(0)
+        If IsUsableBrush(values(1)) Then Return values(1)
+        Return If(System.Windows.Application.Current?.TryFindResource("TextFillColorSecondaryBrush"), System.Windows.Media.Brushes.White)
+    End Function
+
+    Public Function ConvertBack(value As Object, targetTypes As Type(), parameter As Object, culture As CultureInfo) As Object() Implements System.Windows.Data.IMultiValueConverter.ConvertBack
+        Throw New NotSupportedException()
+    End Function
+
+    Private Shared Function IsUsableBrush(value As Object) As Boolean
+        Dim brush = TryCast(value, System.Windows.Media.Brush)
+        If brush Is Nothing Then Return False
+        Dim scb = TryCast(brush, System.Windows.Media.SolidColorBrush)
+        If scb Is Nothing Then Return True ' gradient / non-solid brushes -> use as-is
+        Return Not (scb.Color = System.Windows.Media.Colors.Black OrElse scb.Color = System.Windows.Media.Colors.Transparent)
+    End Function
+
+    Public Overrides Function ProvideValue(serviceProvider As IServiceProvider) As Object
+        Return Me
+    End Function
+End Class
+
+Public Class ZoomBorderScaleToPercentConverter : Inherits Markup.MarkupExtension
+    Implements System.Windows.Data.IValueConverter
+
+    Public Function Convert(value As Object, targetType As Type, parameter As Object, culture As CultureInfo) As Object Implements System.Windows.Data.IValueConverter.Convert
+
+        Dim val = CType(value, Double)
+
+        Return $"{Math.Round((val / 2 * 100), 0)} %"
+
+    End Function
+
+    Public Function ConvertBack(value As Object, targetType As Type, parameter As Object, culture As CultureInfo) As Object Implements System.Windows.Data.IValueConverter.ConvertBack
+        Throw New NotSupportedException()
+    End Function
+
+    Public Overrides Function ProvideValue(serviceProvider As IServiceProvider) As Object
+        Return Me
+    End Function
+End Class

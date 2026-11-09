@@ -1,0 +1,651 @@
+Imports System.IO
+Imports System.Text.Json
+
+Imports PolyCut.Shared
+
+Public Class ProjectSerializationService
+
+    Private ReadOnly _jsonOptions As New JsonSerializerOptions With {
+        .WriteIndented = True,
+        .PropertyNameCaseInsensitive = True
+    }
+
+    ' --------------------
+    ' SAVE / LOAD ProjectData
+    ' --------------------
+
+    Public Function SaveProject(filePath As String, drawables As IEnumerable(Of IDrawable), groups As IEnumerable(Of IDrawable), config As Core.ProcessorConfiguration, Optional referencePoints As IEnumerable(Of ReferencePoint) = Nothing) As Boolean
+        Try
+            Dim projectData = CreateProjectData(drawables, groups, config)
+
+            ' Marks font sizes as real points. Older files leave this empty and are
+            ' opened at their old millimetre-per-unit scale, with a warning.
+            projectData.FontSizeUnit = "mm"
+
+            If referencePoints IsNot Nothing Then
+                projectData.ReferencePoints = referencePoints.Select(Function(r) New ReferencePointData With {.X = r.X, .Y = r.Y}).ToList()
+            End If
+
+            Dim json = JsonSerializer.Serialize(projectData, _jsonOptions)
+            Using stream As New FileStream(filePath, FileMode.Create)
+                Using gzip As New IO.Compression.GZipStream(stream, IO.Compression.CompressionMode.Compress)
+                    Using writer As New StreamWriter(gzip)
+                        writer.Write(json)
+                    End Using
+                End Using
+            End Using
+
+            'File.WriteAllText(filePath, json)
+
+            Return True
+        Catch ex As Exception
+            Application.GetService(Of SnackbarService)?.Show($"Failed to save project", ex.Message, WPF.Ui.Controls.ControlAppearance.Danger, Nothing, TimeSpan.FromSeconds(5))
+            Return False
+        End Try
+    End Function
+
+    Public Function LoadProject(filePath As String) As ProjectData
+        Try
+            If Not File.Exists(filePath) Then Return Nothing
+
+            Dim json As String
+            Using stream As New FileStream(filePath, FileMode.Open)
+                Using gzip As New IO.Compression.GZipStream(stream, IO.Compression.CompressionMode.Decompress)
+                    Using reader As New StreamReader(gzip)
+                        json = reader.ReadToEnd()
+                    End Using
+                End Using
+            End Using
+
+            'json = File.ReadAllText(filePath)
+
+            Return JsonSerializer.Deserialize(Of ProjectData)(json, _jsonOptions)
+        Catch ex As Exception
+            Application.GetService(Of SnackbarService)?.Show($"Failed to load project", ex.Message, WPF.Ui.Controls.ControlAppearance.Danger, Nothing, TimeSpan.FromSeconds(5))
+            Return Nothing
+        End Try
+    End Function
+
+    ' --------------------
+    ' Build runtime objects
+    ' --------------------
+    Public Function BuildRuntimeModel(projectData As ProjectData, designerItemStyle As Style) As RuntimeProjectModel
+
+        If projectData Is Nothing Then Return New RuntimeProjectModel With {
+            .Drawables = New List(Of IDrawable)(),
+            .Groups = New List(Of IDrawable)()
+        }
+
+        Dim drawableById As New Dictionary(Of Guid, IDrawable)
+        Dim groupById As New Dictionary(Of Guid, IDrawable)
+
+        ProjectGeometryMigration.Upgrade(projectData)
+
+        ' 1) Create leaf drawables
+        For Each dd In projectData.Drawables
+            Dim fe = DrawableCodec.DeserializeDrawable(dd)
+            If fe Is Nothing Then Continue For
+
+            ' IMPORTANT: seed size for group-bound calculations BEFORE anything is measured
+            If dd.Width >= 0 Then fe.Width = dd.Width
+            If dd.Height >= 0 Then fe.Height = dd.Height
+
+            Canvas.SetLeft(fe, dd.Left)
+            Canvas.SetTop(fe, dd.Top)
+
+            Dim d As IDrawable = BaseDrawable.DrawableFactory(fe)
+            If TypeOf d Is DrawableText Then
+                d.Fill = If(String.IsNullOrEmpty(dd.FillColor), Nothing, ColorAndBrushHelpers.DeserializeBrush(dd.FillColor))
+                d.Stroke = If(String.IsNullOrEmpty(dd.StrokeColor), Nothing, ColorAndBrushHelpers.DeserializeBrush(dd.StrokeColor))
+                d.StrokeThickness = dd.StrokeThickness
+            End If
+            d.Name = dd.Name
+            d.IsHidden = dd.IsHidden
+
+            drawableById(dd.Id) = d
+        Next
+
+        ' 2) Create groups
+        For Each gd In projectData.Groups
+            Dim g As IDrawable
+            If String.Equals(gd.GroupType, "NestedDrawableGroup", StringComparison.OrdinalIgnoreCase) Then
+                Dim ng As New NestedDrawableGroup(gd.Name)
+                ng.SetNativeSize(gd.NativeWidth, gd.NativeHeight)
+
+                Dim fe = TryCast(ng.DrawableElement, FrameworkElement)
+                If fe IsNot Nothing Then
+                    fe.Width = gd.Width
+                    fe.Height = gd.Height
+                    Canvas.SetLeft(fe, gd.Left)
+                    Canvas.SetTop(fe, gd.Top)
+                End If
+
+                g = ng
+            Else
+                g = New DrawableGroup(gd.Name)
+            End If
+
+            g.Name = gd.Name
+            groupById(gd.Id) = g
+        Next
+
+        ' 3) Wire group membership
+        Using ModelBatch.Begin()
+            For Each gd In projectData.Groups
+                Dim g = groupById(gd.Id)
+
+                For Each cid In gd.ChildIds
+                    If drawableById.ContainsKey(cid) Then
+                        AddChildToGroup(g, drawableById(cid))
+                    ElseIf groupById.ContainsKey(cid) Then
+                        AddChildToGroup(g, groupById(cid))
+                    End If
+                Next
+            Next
+        End Using
+
+        ' 4) Wire parent groups
+        For Each gd In projectData.Groups
+            If Not gd.ParentGroupId.HasValue Then Continue For
+            If groupById.ContainsKey(gd.Id) AndAlso groupById.ContainsKey(gd.ParentGroupId.Value) Then
+                groupById(gd.Id).ParentGroup = groupById(gd.ParentGroupId.Value)
+            End If
+        Next
+
+        ' 5) Rebuild nested visuals (deepest-first)
+        For Each dd In projectData.Drawables
+            Dim leaf As IDrawable = Nothing
+            If Not drawableById.TryGetValue(dd.Id, leaf) Then Continue For
+            If Not TypeOf leaf.ParentGroup Is NestedDrawableGroup Then Continue For
+            RestoreNestedWrapper(leaf, New TransformState With {
+                .Translation = New Point(dd.Left, dd.Top), .Width = dd.Width, .Height = dd.Height,
+                .Rotation = dd.RotationAngle, .TransformOrigin = New Point(dd.TransformOriginX, dd.TransformOriginY),
+                .AffineTransform = If(String.IsNullOrWhiteSpace(dd.AffineTransform), Matrix.Identity, Matrix.Parse(dd.AffineTransform))
+            }, designerItemStyle, False)
+        Next
+
+        Dim nestedGroups = groupById.Values.OfType(Of NestedDrawableGroup)().
+                            OrderByDescending(Function(g) GetNestedDepth(g)).
+                            ToList()
+
+        For Each ng In nestedGroups
+            ng.RebuildGroupVisualFromChildren(designerItemStyle, preserveLocalCoordinates:=True)
+            If TypeOf ng.ParentGroup Is NestedDrawableGroup Then
+                Dim gd = projectData.Groups.First(Function(g) Object.ReferenceEquals(groupById(g.Id), ng))
+                RestoreNestedWrapper(ng, New TransformState With {
+                    .Translation = New Point(gd.Left, gd.Top), .Width = gd.Width, .Height = gd.Height,
+                    .Rotation = gd.RotationAngle, .TransformOrigin = New Point(gd.TransformOriginX, gd.TransformOriginY),
+                    .Scale = New Point(gd.ScaleX, gd.ScaleY),
+                    .AffineTransform = If(String.IsNullOrWhiteSpace(gd.AffineTransform), Matrix.Identity, Matrix.Parse(gd.AffineTransform))
+                }, designerItemStyle, True)
+            End If
+        Next
+
+        Return New RuntimeProjectModel With {
+            .Drawables = drawableById.Values.ToList(),
+            .Groups = groupById.Values.ToList(),
+            .DrawableById = drawableById,
+            .GroupById = groupById
+        }
+    End Function
+
+    Private Shared Sub RestoreNestedWrapper(drawable As IDrawable, state As TransformState, style As Style, applyScale As Boolean)
+        ' Plain group leaves stay clean
+        If state.Rotation = 0 AndAlso state.AffineTransform.IsIdentity AndAlso
+           (Not applyScale OrElse state.Scale = New Point(1, 1)) Then Return
+        Dim wrapper = RichCanvas.DrawableWrapperFactory.CreateWrapper(drawable.DrawableElement, drawable, style)
+        state.ApplyToWrapper(wrapper, applyScale)
+    End Sub
+
+    Public Shared Function CanvasItemsInDocumentOrder(projectData As ProjectData, built As RuntimeProjectModel) As List(Of IDrawable)
+        Dim result As New List(Of IDrawable)()
+        If projectData Is Nothing OrElse built Is Nothing Then Return result
+
+        Dim groupDataById = projectData.Groups.ToDictionary(Function(g) g.Id)
+        For Each root In projectData.Groups.Where(Function(g) Not g.ParentGroupId.HasValue)
+            Dim rootGroup As IDrawable = Nothing
+            If built.GroupById.TryGetValue(root.Id, rootGroup) AndAlso TypeOf rootGroup Is NestedDrawableGroup Then
+                result.Add(rootGroup)
+            Else
+                CollectCanvasItems(root, groupDataById, built, result)
+            End If
+        Next
+
+        ' Clipboard data carries a loose drawable with no group ancestor at all, because the Drawing Group is
+        ' deliberately left out of it. The group walk then finds nothing, so collect those drawables directly.
+        Dim seen As New HashSet(Of IDrawable)(result)
+        For Each d In projectData.Drawables
+            Dim item As IDrawable = Nothing
+            If d IsNot Nothing AndAlso built.DrawableById.TryGetValue(d.Id, item) AndAlso
+               Not item.HasNestedAncestor() AndAlso seen.Add(item) Then
+                result.Add(item)
+            End If
+        Next
+
+        Return result
+    End Function
+
+    Private Shared Sub CollectCanvasItems(groupData As GroupData, groupDataById As Dictionary(Of Guid, GroupData), built As RuntimeProjectModel, result As List(Of IDrawable))
+        Dim group As IDrawable = Nothing
+        If groupData Is Nothing OrElse Not built.GroupById.TryGetValue(groupData.Id, group) Then Return
+
+        For Each childId In groupData.ChildIds
+            Dim childGroup As IDrawable = Nothing
+            If built.GroupById.TryGetValue(childId, childGroup) Then
+                Dim nested = TryCast(childGroup, NestedDrawableGroup)
+                If nested IsNot Nothing Then
+
+                    result.Add(nested)
+                Else
+
+                    Dim childData As GroupData = Nothing
+                    If groupDataById.TryGetValue(childId, childData) Then
+                        CollectCanvasItems(childData, groupDataById, built, result)
+                    End If
+                End If
+                Continue For
+            End If
+
+            Dim leaf As IDrawable = Nothing
+            If built.DrawableById.TryGetValue(childId, leaf) AndAlso Not leaf.HasNestedAncestor() Then
+                result.Add(leaf)
+            End If
+        Next
+    End Sub
+
+    Private Shared Function GetNestedDepth(g As NestedDrawableGroup) As Integer
+        Dim depth As Integer = 0
+        Dim p = TryCast(g.ParentGroup, NestedDrawableGroup)
+        While p IsNot Nothing
+            depth += 1
+            p = TryCast(p.ParentGroup, NestedDrawableGroup)
+        End While
+        Return depth
+    End Function
+
+    Private Shared Sub AddChildToGroup(group As IDrawable, child As IDrawable)
+        If group Is Nothing OrElse child Is Nothing Then Return
+
+        If TypeOf group Is NestedDrawableGroup Then
+            DirectCast(group, NestedDrawableGroup).AddChild(child)
+        ElseIf TypeOf group Is DrawableGroup Then
+            DirectCast(group, DrawableGroup).AddChild(child)
+        End If
+        child.ParentGroup = group
+    End Sub
+
+
+    ' --------------------
+    ' Serialize
+    ' --------------------
+
+    Public Function CreateProjectDataForClipboard(selected As IEnumerable(Of IDrawable), drawingGroup As DrawableGroup) As ProjectData
+
+        Dim allGroups As HashSet(Of IDrawable) = Nothing
+        Dim allLeaves As HashSet(Of IDrawable) = Nothing
+
+        ProjectGraph.WalkGraph(selected, allGroups, allLeaves)
+
+        Dim g = If(allGroups, New HashSet(Of IDrawable)())
+        Dim l = If(allLeaves, New HashSet(Of IDrawable)())
+
+        For Each d In l
+            AddAncestors(d, g, drawingGroup)
+        Next
+        For Each grp In g.ToList()
+            AddAncestors(grp, g, drawingGroup)
+        Next
+
+        Return CreateProjectDataFromSets(g.ToList(), l.ToList())
+    End Function
+
+    Public Function CreateProjectData(drawables As IEnumerable(Of IDrawable),
+                                  groups As IEnumerable(Of IDrawable),
+                                  config As Core.ProcessorConfiguration) As ProjectData
+
+        Dim allGroups As HashSet(Of IDrawable) = Nothing
+        Dim allLeaves As HashSet(Of IDrawable) = Nothing
+
+        ProjectGraph.WalkGraph(drawables, allGroups, allLeaves)
+        ProjectGraph.WalkGraph(groups, allGroups, allLeaves)
+
+        Dim groupList = If(allGroups, New HashSet(Of IDrawable)()).ToList()
+        Dim leafList = If(allLeaves, New HashSet(Of IDrawable)()).ToList()
+
+        Return CreateProjectDataFromSets(groupList, leafList, config)
+    End Function
+
+
+    Private Function CreateProjectDataFromSets(groupList As List(Of IDrawable),
+                                                  leafList As List(Of IDrawable),
+                                                  Optional config As Core.ProcessorConfiguration = Nothing) As ProjectData
+
+        Dim projectData As New ProjectData()
+
+        If groupList Is Nothing OrElse groupList.Count = 0 Then
+            ' still serialize drawables if any
+            groupList = New List(Of IDrawable)
+        End If
+        If leafList Is Nothing OrElse leafList.Count = 0 Then
+            leafList = New List(Of IDrawable)
+        End If
+
+        Dim groupIdMap As New Dictionary(Of IDrawable, Guid)(groupList.Count)
+        For Each g In groupList
+            groupIdMap(g) = Guid.NewGuid()
+        Next
+
+        Dim drawableIdMap As New Dictionary(Of IDrawable, Guid)(leafList.Count)
+        For Each d In leafList
+            drawableIdMap(d) = Guid.NewGuid()
+        Next
+
+        ' --- Groups ---
+        For Each g In groupList
+            Dim gd As New GroupData With {
+            .Id = groupIdMap(g),
+            .Name = g.Name,
+            .GroupType = If(TypeOf g Is NestedDrawableGroup, "NestedDrawableGroup", "DrawableGroup"),
+            .IsHidden = g.IsHidden
+        }
+
+            Dim parent = TryCast(g.ParentGroup, IDrawable)
+            If parent IsNot Nothing Then
+                Dim pid As Guid = Nothing
+                If groupIdMap.TryGetValue(parent, pid) Then
+                    gd.ParentGroupId = pid
+                End If
+            End If
+
+            DrawableCodec.SerializeGroupWrapperState(g, gd)
+
+            Dim ng = TryCast(g, NestedDrawableGroup)
+            If ng IsNot Nothing Then
+                Dim native = ng.GetNativeSize()
+                gd.NativeWidth = native.Item1
+                gd.NativeHeight = native.Item2
+            End If
+
+            For Each ch In ProjectGraph.GetGroupChildren(g)
+                If ch Is Nothing Then Continue For
+
+                If ch.IsAnyGroup() Then
+                    Dim cid As Guid = Nothing
+                    If groupIdMap.TryGetValue(ch, cid) Then gd.ChildIds.Add(cid)
+                Else
+                    Dim cid As Guid = Nothing
+                    If drawableIdMap.TryGetValue(ch, cid) Then gd.ChildIds.Add(cid)
+                End If
+            Next
+
+            projectData.Groups.Add(gd)
+        Next
+
+        ' --- Drawables ---
+        For Each d In leafList
+            Dim dd = DrawableCodec.SerializeDrawable(d, drawableIdMap(d))
+            If dd Is Nothing Then Continue For
+
+            Dim parent = TryCast(d.ParentGroup, IDrawable)
+            If parent IsNot Nothing Then
+                Dim pid As Guid = Nothing
+                If groupIdMap.TryGetValue(parent, pid) Then
+                    dd.ParentGroupId = pid
+                End If
+            End If
+
+            projectData.Drawables.Add(dd)
+        Next
+
+        ' --- Config ---
+        If config IsNot Nothing Then
+            Dim jsonConfig = JsonSerializer.Serialize(config, _jsonOptions)
+            projectData.Configuration = jsonConfig
+        End If
+
+
+        Return projectData
+    End Function
+
+
+    Private Shared Sub AddAncestors(item As IDrawable,
+                               groups As HashSet(Of IDrawable),
+                               drawingGroup As DrawableGroup)
+
+        Dim p As IDrawable = item?.ParentGroup
+        While p IsNot Nothing
+            ' Never include Drawing Group in clipboard data; pasted loose items attach to current DrawingGroup.
+            If drawingGroup IsNot Nothing AndAlso Object.ReferenceEquals(p, drawingGroup) Then Exit While
+
+            ' Only groups matter as ancestors
+            If p.IsAnyGroup() Then groups.Add(p)
+
+            p = p.ParentGroup
+        End While
+    End Sub
+
+End Class
+
+
+Friend NotInheritable Class DrawableCodec
+
+    'The state a drawable persists, independent of whether its visual is currently wrapped
+    Private Shared Function CaptureDrawableState(drawable As IDrawable) As TransformState
+        Dim element = drawable?.DrawableElement
+        If element Is Nothing Then Return New TransformState()
+
+        Dim wrapper = TryCast(element.Parent, ContentControl)
+        If wrapper IsNot Nothing Then
+            Dim wrappedState = TransformState.FromWrapper(wrapper)
+            Dim nested = TryCast(drawable.ParentGroup, NestedDrawableGroup)
+            Dim parent = TryCast(wrapper.Parent, FrameworkElement)
+            If nested IsNot Nothing AndAlso parent IsNot Nothing Then
+                Dim offset = parent.TransformToVisual(nested.InnerCanvas).Transform(New Point())
+                wrappedState.Translation += CType(offset, Vector)
+            End If
+            Return wrappedState
+        End If
+
+        Dim state As New TransformState()
+        Dim left = CanvasUtil.GetLeftSafe(element)
+        Dim top = CanvasUtil.GetTopSafe(element)
+
+        Dim parentNested = TryCast(drawable.ParentGroup, NestedDrawableGroup)
+        If parentNested IsNot Nothing AndAlso parentNested.InnerCanvas IsNot Nothing Then
+            Try
+
+                Dim parent = TryCast(element.Parent, FrameworkElement)
+                Dim origin = parent.TransformToVisual(parentNested.InnerCanvas).Transform(New Point(left, top))
+                left = origin.X
+                top = origin.Y
+            Catch
+            End Try
+        End If
+
+        state.Translation = New Point(left, top)
+        state.Width = If(element.ActualWidth > 0, element.ActualWidth, CanvasUtil.GetWidthSafe(element))
+        state.Height = If(element.ActualHeight > 0, element.ActualHeight, CanvasUtil.GetHeightSafe(element))
+
+        Dim rotate = TryCast(element.RenderTransform, RotateTransform)
+        state.Rotation = If(rotate IsNot Nothing, rotate.Angle, 0)
+
+        Dim group = TryCast(element.RenderTransform, TransformGroup)
+        Dim scale = If(group IsNot Nothing, group.Children.OfType(Of ScaleTransform)().FirstOrDefault(), TryCast(element.RenderTransform, ScaleTransform))
+        If scale IsNot Nothing Then state.Scale = New Point(scale.ScaleX, scale.ScaleY)
+
+        Return state
+    End Function
+
+    Protected Friend Shared Function SerializeDrawable(drawable As IDrawable, id As Guid) As DrawableData
+        If drawable?.DrawableElement Is Nothing Then Return Nothing
+
+        Dim element = drawable.DrawableElement
+        Dim wrapper = TryCast(element.Parent, ContentControl)
+
+        Dim data As New DrawableData With {
+            .Id = id,
+            .Name = drawable.Name,
+            .IsHidden = drawable.IsHidden
+        }
+
+        Dim state = CaptureDrawableState(drawable)
+        data.Left = state.Translation.X
+        data.Top = state.Translation.Y
+        data.Width = state.Width
+        data.Height = state.Height
+        data.RotationAngle = state.Rotation
+        data.AffineTransform = state.AffineTransform.ToString(Globalization.CultureInfo.InvariantCulture)
+        data.TransformOriginX = state.TransformOrigin.X
+        data.TransformOriginY = state.TransformOrigin.Y
+        data.ScaleX = state.Scale.X
+        data.ScaleY = state.Scale.Y
+
+        If Double.IsNaN(data.Left) Then data.Left = 0
+        If Double.IsNaN(data.Top) Then data.Top = 0
+
+        ' Visual properties
+        data.StrokeColor = ColorAndBrushHelpers.SerializeBrush(drawable.Stroke)
+        data.StrokeThickness = drawable.StrokeThickness
+        data.FillColor = ColorAndBrushHelpers.SerializeBrush(drawable.Fill)
+
+        ' Type-specific serialization
+        If TypeOf element Is GeometricShape Then
+            Dim geometric = DirectCast(element, GeometricShape)
+            data.GeometricBounds = True
+            data.Type = geometric.Kind
+            data.IsRegistrationMark = RegistrationMarkHelper.IsRegistrationMark(element)
+            If geometric.Kind = "Path" Then
+                data.PathData = geometric.Data?.ToString()
+                If geometric.Data?.Transform IsNot Nothing AndAlso Not geometric.Data.Transform.Value.IsIdentity Then
+                    data.PathTransform = geometric.Data.Transform.Value.ToString(Globalization.CultureInfo.InvariantCulture)
+                End If
+            End If
+            If geometric.Kind = "Line" Then
+                Dim line = DirectCast(geometric.Data, LineGeometry)
+                data.LineX1 = line.StartPoint.X
+                data.LineY1 = line.StartPoint.Y
+                data.LineX2 = line.EndPoint.X
+                data.LineY2 = line.EndPoint.Y
+            End If
+        ElseIf TypeOf element Is TextBox Then
+            data.Type = "Text"
+            Dim textBox = CType(element, TextBox)
+            data.TextContent = textBox.Text
+            data.FontFamily = BundledFontRegistry.ToStoredValue(textBox.FontFamily)
+            data.FontSize = textBox.FontSize
+
+        Else
+            Return Nothing
+        End If
+
+        Return data
+    End Function
+
+    Protected Friend Shared Sub SerializeGroupWrapperState(group As IDrawable, groupData As GroupData)
+        Try
+            Dim element = TryCast(group.DrawableElement, FrameworkElement)
+            If element Is Nothing Then Return
+
+            Dim state = CaptureDrawableState(group)
+
+            groupData.Left = state.Translation.X
+            groupData.Top = state.Translation.Y
+            groupData.Width = state.Width
+            groupData.Height = state.Height
+            groupData.RotationAngle = state.Rotation
+            groupData.AffineTransform = state.AffineTransform.ToString(Globalization.CultureInfo.InvariantCulture)
+            groupData.TransformOriginX = state.TransformOrigin.X
+            groupData.TransformOriginY = state.TransformOrigin.Y
+            groupData.ScaleX = state.Scale.X
+            groupData.ScaleY = state.Scale.Y
+
+            groupData.IsHidden = group.IsHidden
+
+        Catch
+        End Try
+    End Sub
+
+    Protected Friend Shared Function DeserializeDrawable(data As DrawableData) As FrameworkElement
+        If data Is Nothing Then Return Nothing
+
+        Dim element As FrameworkElement = Nothing
+
+        Select Case data.Type
+            Case "Path"
+                Dim path As New System.Windows.Shapes.Path With {
+                    .Stretch = Stretch.Fill,
+                    .Data = If(Not String.IsNullOrEmpty(data.PathData),
+                                Geometry.Parse(data.PathData),
+                                Nothing)
+                }
+                If Not String.IsNullOrWhiteSpace(data.PathTransform) AndAlso path.Data IsNot Nothing Then
+                    path.Data = path.Data.Clone()
+                    path.Data.Transform = New MatrixTransform(Matrix.Parse(data.PathTransform))
+                End If
+                element = path
+
+            Case "Rectangle"
+                element = New Rectangle()
+                If data.IsRegistrationMark Then RegistrationMarkHelper.SetIsRegistrationMark(element, True)
+
+            Case "Ellipse"
+                element = New Ellipse()
+
+            Case "Line"
+                element = New Line With {
+                    .X1 = data.LineX1,
+                    .Y1 = data.LineY1,
+                    .X2 = data.LineX2,
+                    .Y2 = data.LineY2
+                }
+
+            Case "Text"
+                element = New TextBox With {
+                    .Width = Double.NaN,
+                    .Height = Double.NaN,
+                    .Background = Brushes.Transparent,
+                    .BorderBrush = Brushes.Transparent,
+                    .Foreground = Brushes.Black,
+                    .BorderThickness = New Thickness(1),
+                    .Style = Nothing,
+                    .Text = data.TextContent,
+                    .AcceptsReturn = False,
+                    .AcceptsTab = True,
+                    .FontSize = If(data.FontSize > 0, data.FontSize, 14),
+                    .FontFamily = BundledFontRegistry.FromStoredValue(data.FontFamily),
+                    .FontWeight = FontWeights.Regular,
+                    .Padding = New Thickness(0)
+                }
+
+            Case Else
+                Return Nothing
+        End Select
+
+        If element Is Nothing Then Return Nothing
+
+        If TypeOf element Is Shape Then
+            Dim shape = CType(element, Shape)
+            shape.Stroke = ColorAndBrushHelpers.DeserializeBrush(data.StrokeColor)
+            shape.StrokeThickness = data.StrokeThickness
+            shape.Fill = ColorAndBrushHelpers.DeserializeBrush(data.FillColor)
+        ElseIf TypeOf element Is TextBox Then
+            Dim textBox = CType(element, TextBox)
+            textBox.Foreground = ColorAndBrushHelpers.DeserializeBrush(data.FillColor)
+        End If
+
+        'IMPROTANT: The child element carries the scale (mirror/resize); the wrapper carries position/size/rotation and is set up later via TransformState.ApplyToWrapper.
+        Dim state As New TransformState() With {
+            .Scale = New Point(data.ScaleX, data.ScaleY)
+        }
+
+        If Math.Abs(state.Scale.X - 1.0) > 0.01 OrElse Math.Abs(state.Scale.Y - 1.0) > 0.01 Then
+            Dim tg As New TransformGroup()
+            tg.Children.Add(New ScaleTransform(state.Scale.X, state.Scale.Y))
+            element.RenderTransform = tg
+            element.RenderTransformOrigin = New Point(0.5, 0.5)
+        End If
+
+        Return element
+    End Function
+
+End Class

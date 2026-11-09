@@ -1,0 +1,317 @@
+Imports System.Collections.ObjectModel
+Imports PolyCut.Shared
+
+Imports System.ComponentModel
+Imports System.Windows
+
+Public Class ColorPickerControl
+    Inherits UserControl
+
+    Private Shared ReadOnly WorkspaceColors As New ObservableCollection(Of SolidColorBrush)
+    Private Const MaxWorkspaceColors As Integer = 30
+
+    Public Sub New()
+        InitializeComponent()
+
+        WorkspaceColorsList.ItemsSource = WorkspaceColors
+
+
+        ' Skip runtime-only initialisation in the Visual Studio designer.
+        If DesignerProperties.GetIsInDesignMode(Me) Then Return
+
+        Dim mainVM = Application.GetService(Of MainViewModel)()
+
+        If Not mainVM.IsWindows Then
+            ColorPopup.AllowsTransparency = False
+            ColorPopupBorder.CornerRadius = New CornerRadius(0)
+            EyedropperButton.Visibility = Visibility.Collapsed
+        End If
+
+    End Sub
+
+    ' Compact testing layout for toolbar
+    Public Shared ReadOnly IsCompactProperty As DependencyProperty = DependencyProperty.Register(NameOf(IsCompact), GetType(Boolean), GetType(ColorPickerControl), New PropertyMetadata(False))
+
+    Public Property IsCompact As Boolean
+        Get
+            Return CBool(GetValue(IsCompactProperty))
+        End Get
+        Set(value As Boolean)
+            SetValue(IsCompactProperty, value)
+        End Set
+    End Property
+
+    ' Label text property
+    Public Shared ReadOnly LabelTextProperty As DependencyProperty =
+        DependencyProperty.Register("LabelText", GetType(String), GetType(ColorPickerControl), New PropertyMetadata("Color"))
+
+    Public Property LabelText As String
+        Get
+            Return CStr(GetValue(LabelTextProperty))
+        End Get
+        Set(value As String)
+            SetValue(LabelTextProperty, value)
+        End Set
+    End Property
+
+    ' Current color property
+    Public Shared ReadOnly CurrentColorProperty As DependencyProperty =
+        DependencyProperty.Register("CurrentColor", GetType(Brush), GetType(ColorPickerControl),
+            New PropertyMetadata(Brushes.Black, AddressOf OnCurrentColorChanged))
+
+    Public Property CurrentColor As Brush
+        Get
+            Return CType(GetValue(CurrentColorProperty), Brush)
+        End Get
+        Set(value As Brush)
+            SetValue(CurrentColorProperty, value)
+        End Set
+    End Property
+
+    Private Shared Sub OnCurrentColorChanged(d As DependencyObject, e As DependencyPropertyChangedEventArgs)
+        Dim control = TryCast(d, ColorPickerControl)
+        If control Is Nothing Then Return
+        control.UpdateHexFromColor()
+    End Sub
+
+    ' Hex color property
+    Public Shared ReadOnly HexColorProperty As DependencyProperty =
+        DependencyProperty.Register("HexColor", GetType(String), GetType(ColorPickerControl),
+            New PropertyMetadata("#FF000000", AddressOf OnHexColorChanged))
+
+    Public Property HexColor As String
+        Get
+            Return CStr(GetValue(HexColorProperty))
+        End Get
+        Set(value As String)
+            SetValue(HexColorProperty, value)
+        End Set
+    End Property
+
+    Private Shared Sub OnHexColorChanged(d As DependencyObject, e As DependencyPropertyChangedEventArgs)
+        Dim control = TryCast(d, ColorPickerControl)
+        If control Is Nothing OrElse control._updatingHex Then Return
+        control.UpdateColorFromHex()
+    End Sub
+
+    ' Event for color selection
+    Public Event ColorSelected As EventHandler(Of ColorSelectedEventArgs)
+
+    ' Event fired when popup opens (to capture old color for undo)
+    Public Event PopupOpening As EventHandler
+
+    Private _updatingHex As Boolean = False
+
+    Private Sub ColorButton_Click(sender As Object, e As RoutedEventArgs)
+
+        If ColorPopup.IsOpen Then
+            ColorPopup.IsOpen = False
+            Return
+        End If
+
+        RefreshWorkspaceColors()
+
+        RaiseEvent PopupOpening(Me, EventArgs.Empty)
+        UpdateHexFromColor()
+        If _openPicker IsNot Nothing AndAlso Not ReferenceEquals(_openPicker, Me) Then _openPicker.ColorPopup.IsOpen = False
+        _openPicker = Me
+        ColorPopup.IsOpen = True
+    End Sub
+
+    Private Shared _openPicker As ColorPickerControl
+
+
+    Private Sub RefreshWorkspaceColors()
+
+        Dim defaults As New HashSet(Of Color)
+        For Each brush In DefaultColorsList.Items.OfType(Of SolidColorBrush)()
+            defaults.Add(brush.Color)
+        Next
+
+        Dim known As New HashSet(Of Color)(defaults)
+        For Each brush In WorkspaceColors
+            known.Add(brush.Color)
+        Next
+
+        Dim additions As New List(Of Color)
+        Dim document = Application.GetService(Of Document)()
+        For Each drawable In FlattenDrawables(document.Drawables)
+            CollectColor(additions, known, drawable.Stroke)
+            CollectColor(additions, known, drawable.Fill)
+        Next
+
+        For i = additions.Count - 1 To 0 Step -1
+            Dim brush As New SolidColorBrush(additions(i))
+            brush.Freeze()
+            WorkspaceColors.Insert(0, brush)
+        Next
+
+        While WorkspaceColors.Count > MaxWorkspaceColors
+            WorkspaceColors.RemoveAt(WorkspaceColors.Count - 1)
+        End While
+
+        Dim sectionVisibility As Visibility = If(WorkspaceColors.Count = 0, Visibility.Collapsed, Visibility.Visible)
+        WorkspaceColorsSeparator.Visibility = sectionVisibility
+        WorkspaceColorsScroller.Visibility = sectionVisibility
+
+    End Sub
+
+    'Fun time to use an iterator, always forget these exist
+    Private Shared Iterator Function FlattenDrawables(items As IEnumerable(Of IDrawable)) As IEnumerable(Of IDrawable)
+        If items Is Nothing Then Return
+
+        For Each drawable In items
+            If drawable Is Nothing Then Continue For
+
+            Dim children = ProjectGraph.GetGroupChildren(drawable)
+            Dim yielded As Boolean = False
+
+            If children IsNot Nothing Then
+                For Each child In FlattenDrawables(children)
+                    yielded = True
+                    Yield child
+                Next
+            End If
+
+            If Not yielded Then Yield drawable
+        Next
+    End Function
+
+    Private Shared Sub CollectColor(into As List(Of Color), known As HashSet(Of Color), brush As Brush)
+        Dim solid = TryCast(brush, SolidColorBrush)
+        If solid Is Nothing Then Return
+
+        Dim color = solid.Color
+        If color.A = 0 Then Return
+        If Not known.Add(color) Then Return
+
+        into.Add(color)
+    End Sub
+
+    Private Sub WorkspaceColorsScroller_PreviewMouseWheel(sender As Object, e As MouseWheelEventArgs)
+        Dim scroller = TryCast(sender, ScrollViewer)
+        If scroller Is Nothing Then Return
+
+        scroller.ScrollToHorizontalOffset(scroller.HorizontalOffset - e.Delta)
+        e.Handled = True
+    End Sub
+
+    Private Sub ColorMenuItem_Click(sender As Object, e As RoutedEventArgs)
+        Dim button = TryCast(sender, Button)
+        If button Is Nothing Then Return
+
+        Dim brush = TryCast(button.Tag, Brush)
+        If brush Is Nothing Then Return
+
+        ColorPopup.IsOpen = False
+        SetCurrentValue(CurrentColorProperty, brush)
+        RaiseEvent ColorSelected(Me, New ColorSelectedEventArgs(brush))
+    End Sub
+
+    Private Sub HexTextBox_KeyDown(sender As Object, e As KeyEventArgs)
+        If e.Key = Key.Enter Then
+            UpdateColorFromHex()
+            If IsValidHex(HexColor) Then
+                ColorPopup.IsOpen = False
+            End If
+            e.Handled = True
+        ElseIf e.Key = Key.Escape Then
+            ColorPopup.IsOpen = False
+            e.Handled = True
+        End If
+    End Sub
+
+    Private Sub HexTextBox_LostFocus(sender As Object, e As RoutedEventArgs)
+        UpdateColorFromHex()
+    End Sub
+
+    Private Sub UpdateHexFromColor()
+        _updatingHex = True
+        Try
+            Dim solidBrush = TryCast(CurrentColor, SolidColorBrush)
+            If solidBrush IsNot Nothing Then
+                Dim c = solidBrush.Color
+                HexColor = $"#{c.A:X2}{c.R:X2}{c.G:X2}{c.B:X2}"
+            Else
+                HexColor = "#FF000000"
+            End If
+        Finally
+            _updatingHex = False
+        End Try
+    End Sub
+
+    Private Sub UpdateColorFromHex()
+        If String.IsNullOrWhiteSpace(HexColor) Then Return
+
+        Dim hexValue = HexColor.Trim()
+        If Not hexValue.StartsWith("#"c) Then
+            hexValue = "#" & hexValue
+        End If
+
+        If IsValidHex(hexValue) Then
+            Try
+                Dim color = CType(ColorConverter.ConvertFromString(hexValue), Color)
+                Dim brush As New SolidColorBrush(color)
+                SetCurrentValue(CurrentColorProperty, brush)
+                RaiseEvent ColorSelected(Me, New ColorSelectedEventArgs(brush))
+            Catch
+                ' Invalid hex, revert to current color
+                UpdateHexFromColor()
+            End Try
+        End If
+    End Sub
+
+    Private Function IsValidHex(hex As String) As Boolean
+        If String.IsNullOrWhiteSpace(hex) Then Return False
+        If Not hex.StartsWith("#"c) Then Return False
+
+        Dim hexDigits = hex.Substring(1)
+        Return (hexDigits.Length = 6 OrElse hexDigits.Length = 8) AndAlso
+               hexDigits.All(Function(c) "0123456789ABCDEFabcdef".Contains(c))
+    End Function
+
+
+    Private _eyedropper As Eyedropper
+
+    Private Async Sub EyedropperButton_Click(sender As Object, e As RoutedEventArgs)
+        Dim before As Brush = CloneBrush(TryCast(CurrentColor, Brush))
+        RefreshWorkspaceColors()
+
+        RaiseEvent PopupOpening(Me, EventArgs.Empty)
+        If _eyedropper Is Nothing Then
+            _eyedropper = New Eyedropper(Window.GetWindow(Me))
+        End If
+
+        Dim picked As Color? = Await _eyedropper.BeginAsync()
+
+        If Not picked.HasValue Then
+            If before IsNot Nothing Then SetCurrentValue(CurrentColorProperty, before)
+            UpdateHexFromColor()
+            Return
+        End If
+
+        Dim b As New SolidColorBrush(picked.Value)
+        b.Freeze()
+        SetCurrentValue(CurrentColorProperty, b)
+        RaiseEvent ColorSelected(Me, New ColorSelectedEventArgs(b))
+    End Sub
+
+    Private Shared Function CloneBrush(b As Brush) As Brush
+        If b Is Nothing Then Return Nothing
+        Dim clone = b.Clone()
+        clone.Freeze()
+        Return clone
+    End Function
+
+End Class
+
+Public Class ColorSelectedEventArgs
+    Inherits EventArgs
+
+    Public Property SelectedBrush As Brush
+
+    Public Sub New(brush As Brush)
+        SelectedBrush = brush
+    End Sub
+End Class
+

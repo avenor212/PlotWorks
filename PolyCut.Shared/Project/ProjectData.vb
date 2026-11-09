@@ -1,0 +1,115 @@
+Imports System.Collections.Generic
+Imports System.Windows
+Imports System.Windows.Media
+
+Public Class ProjectData
+    Public Property Version As String = "1.0"
+    Public Property CreatedDate As DateTime = DateTime.Now
+    Public Property ModifiedDate As DateTime = DateTime.Now
+    Public Property Drawables As List(Of DrawableData) = New List(Of DrawableData)
+    Public Property Groups As List(Of GroupData) = New List(Of GroupData)
+
+    ''' <summary>Physical reference points captured on the printer (canvas space).</summary>
+    Public Property ReferencePoints As List(Of ReferencePointData) = New List(Of ReferencePointData)
+
+    Public Property Configuration As String
+
+    ''' <summary>"mm" once font sizes are stored as real points (font box in millimetres).
+    ''' Empty in files written before that change, where the size number was taken as
+    ''' millimetres directly - those open at 0.35x and the user is told why.</summary>
+    Public Property FontSizeUnit As String
+
+    Public ReadOnly Property Hash As String
+        Get
+            Return $"{Drawables.Count}-{Groups.Count}-{CreatedDate.Ticks}-{ModifiedDate.Ticks}".GetHashCode().ToString("X")
+        End Get
+    End Property
+
+End Class
+
+
+Public Class ReferencePointData
+    Public Property X As Double
+    Public Property Y As Double
+End Class
+
+
+Public Class DrawableData
+
+    Public Property GeometricBounds As Boolean  ' Persistence marker only: missing/false records are upgraded on load.
+    Public Property Id As Guid = Guid.NewGuid()
+    Public Property Name As String
+    Public Property Type As String ' "Path", "Rectangle", "Ellipse", "Text", "Line"
+    Public Property Left As Double
+    Public Property Top As Double
+    Public Property Width As Double
+    Public Property Height As Double
+    Public Property RotationAngle As Double
+    Public Property AffineTransform As String
+    Public Property TransformOriginX As Double = 0.5
+    Public Property TransformOriginY As Double = 0.5
+    Public Property ScaleX As Double = 1.0
+    Public Property ScaleY As Double = 1.0
+    Public Property IsHidden As Boolean
+
+    Public Property IsRegistrationMark As Boolean 'Always export regardless of single-colour filtering
+
+    ' Visual properties
+    Public Property StrokeColor As String
+    Public Property StrokeThickness As Double
+    Public Property FillColor As String
+
+    ' Type-specific data
+    Public Property PathData As String ' For Path elements
+    Public Property PathTransform As String ' Optional transform on the source geometry
+    Public Property TextContent As String ' For TextBox
+    Public Property FontFamily As String
+    Public Property FontSize As Double
+    Public Property LineX1 As Double ' For Line
+    Public Property LineY1 As Double
+    Public Property LineX2 As Double
+    Public Property LineY2 As Double
+
+    ' Group membership
+    Public Property ParentGroupId As Guid?
+End Class
+
+
+Public Class GroupData
+    Public Property Id As Guid = Guid.NewGuid()
+    Public Property Name As String
+
+    ' "DrawableGroup" or "NestedDrawableGroup"
+    Public Property GroupType As String = "DrawableGroup"
+
+    ' Hierarchy
+    Public Property ChildIds As List(Of Guid) = New List(Of Guid)
+    Public Property ParentGroupId As Guid?
+
+    ' Visual state for the group's WRAPPER (so transforms persist)
+    Public Property Left As Double
+    Public Property Top As Double
+    Public Property Width As Double
+    Public Property Height As Double
+    Public Property RotationAngle As Double
+    Public Property AffineTransform As String
+    Public Property TransformOriginX As Double = 0.5
+    Public Property TransformOriginY As Double = 0.5
+    Public Property ScaleX As Double = 1.0
+    Public Property ScaleY As Double = 1.0
+    Public Property IsHidden As Boolean
+
+    ' For NestedDrawableGroup with Viewbox: inner-canvas "native" size (pre-scale)
+    Public Property NativeWidth As Double
+    Public Property NativeHeight As Double
+End Class
+
+Public Class RuntimeProjectModel
+    Public Property Drawables As List(Of IDrawable)
+    Public Property Groups As List(Of IDrawable)
+
+    ' Exact lookup by saved IDs:
+    Public Property DrawableById As Dictionary(Of Guid, IDrawable)
+    Public Property GroupById As Dictionary(Of Guid, IDrawable)
+End Class
+

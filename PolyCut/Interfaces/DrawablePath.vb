@@ -1,0 +1,69 @@
+﻿Imports PolyCut.Shared
+
+Imports Svg
+
+Public Class DrawablePath : Inherits BaseDrawable : Implements IDrawable
+
+
+    Public Overloads ReadOnly Property VisualName As String Implements IDrawable.VisualName
+    Public Sub New(element As Shape)
+        DrawableElement = GeometricShape.FromShape(element)
+        VisualName = "Path"
+        Name = VisualName
+    End Sub
+
+    Public Overrides Function DrawingToSVG() As SvgVisualElement Implements IDrawable.DrawingToSVG
+        Dim data = DirectCast(DrawableElement, GeometricShape).Data
+
+        Dim fillServer As SvgColourServer = CreateSvgFillServer()
+        Dim strokeServer As SvgColourServer = CreateSvgStrokeServer()
+        Dim strokeW As Single = If(strokeServer IsNot Nothing, CSng(Me.StrokeThickness), 0.001F)
+        Dim d As String = data.ToString()
+        If fillServer IsNot Nothing Then d = CloseSvgPathData(d)
+
+        Dim svgPath As New SvgPath With {
+            .PathData = SvgPathBuilder.Parse(d),
+            .Stroke = SvgPaintServer.None,
+            .Fill = If(fillServer, SvgPaintServer.None)
+        }
+
+        ' Only set stroke properties if we have a stroke
+        If strokeServer IsNot Nothing Then
+            svgPath.Stroke = strokeServer
+            svgPath.StrokeWidth = strokeW
+        End If
+
+        Return svgPath
+    End Function
+
+    Private Function CloseSvgPathData(d As String) As String
+        If String.IsNullOrWhiteSpace(d) Then Return d
+
+        ' Ensure each subpath (after an M/m) ends with Z/z before the next M/m or end of string
+        Dim sb As New System.Text.StringBuilder()
+        Dim i As Integer = 0
+
+        Dim inSubpath As Boolean = False
+        Dim subpathClosed As Boolean = False
+
+        While i < d.Length
+            Dim ch As Char = d(i)
+
+            If ch = "M"c OrElse ch = "m"c Then
+                If inSubpath AndAlso Not subpathClosed Then sb.Append(" Z ")
+                inSubpath = True
+                subpathClosed = False
+            ElseIf ch = "Z"c OrElse ch = "z"c Then
+                subpathClosed = True
+            End If
+
+            sb.Append(ch)
+            i += 1
+        End While
+
+        If inSubpath AndAlso Not subpathClosed Then sb.Append(" Z")
+        Return sb.ToString()
+    End Function
+
+
+End Class

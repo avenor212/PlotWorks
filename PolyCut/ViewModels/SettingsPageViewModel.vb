@@ -1,0 +1,105 @@
+Imports CommunityToolkit.Mvvm.ComponentModel
+Imports CommunityToolkit.Mvvm.Input
+
+Imports LazyTranslate
+
+Partial Public Class SettingsPageViewModel : Inherits ObservableObject
+
+    <ObservableProperty> Private _MainVM As MainViewModel
+    Public ReadOnly Property UIConfiguration As UIConfiguration
+
+    <ObservableProperty> Private _LanguageItems As New List(Of LanguageItem)
+
+    Private _GridConfig As GridConfiguration
+
+    Sub New(viewmodel As MainViewModel, uiConfiguration As UIConfiguration)
+        Me.MainVM = viewmodel
+        Me.UIConfiguration = uiConfiguration
+        Me._GridConfig = UIConfiguration.GridConfig
+        Me.LanguageItems = LazyTranslate.GetAvailableLanguages()
+
+        AddHandler MainVM.Printer.PropertyChanged, Sub(sender, e)
+                                                       If e.PropertyName = NameOf(Printer.BedWidth) OrElse e.PropertyName = NameOf(Printer.BedHeight) Then
+                                                           OnPropertyChanged(NameOf(GridClipRect))
+                                                       End If
+                                                   End Sub
+
+        AddHandler _GridConfig.PropertyChanged, Sub(sender, e)
+
+                                                    OnPropertyChanged(NameOf(GridLineVerticalEnd))
+                                                    OnPropertyChanged(NameOf(GridLineHorizontalEnd))
+                                                    OnPropertyChanged(NameOf(PrinterGridPreviewViewport))
+                                                    OnPropertyChanged(NameOf(GridClipRect))
+
+                                                End Sub
+
+    End Sub
+
+
+
+    Public ReadOnly Property PrinterGridPreviewViewport As Rect
+        Get
+            Return New Rect(_GridConfig.InsetLeft, _GridConfig.InsetTop, _GridConfig.Spacing, _GridConfig.Spacing) : End Get
+    End Property
+
+    Public ReadOnly Property GridLineVerticalEnd As Point
+        Get
+            Return New Point(0, _GridConfig.Spacing)
+        End Get
+    End Property
+
+    Public ReadOnly Property GridLineHorizontalEnd As Point
+        Get
+            Return New Point(_GridConfig.Spacing, 0)
+        End Get
+    End Property
+
+    Public ReadOnly Property GridClipRect As Rect
+        Get
+            Dim left = _GridConfig.InsetLeft
+            Dim top = _GridConfig.InsetTop
+            Dim right = MainVM.Printer.BedWidth - _GridConfig.InsetRight
+            Dim bottom = MainVM.Printer.BedHeight - _GridConfig.InsetBottom
+            Return New Rect(left, top, right - left, bottom - top)
+        End Get
+    End Property
+
+
+    Public Sub AddToStartMenu()
+
+        Dim startMenu = Environment.GetFolderPath(Environment.SpecialFolder.StartMenu)
+        Dim programs = IO.Path.Combine(startMenu, "Programs")
+
+        Dim shortcutPath = IO.Path.Combine(programs, "PlotWorks.lnk")
+
+        Dim shell = CreateObject("WScript.Shell")
+        Dim shortcut = shell.CreateShortcut(shortcutPath)
+
+        shortcut.TargetPath = Process.GetCurrentProcess().MainModule.FileName
+        shortcut.WorkingDirectory = AppDomain.CurrentDomain.BaseDirectory
+        shortcut.IconLocation = Process.GetCurrentProcess().MainModule.FileName & ",0"
+        shortcut.Description = "PlotWorks"
+
+        shortcut.Save()
+    End Sub
+
+    Friend Sub RemoveFromStartMenu()
+        Dim startMenu = Environment.GetFolderPath(Environment.SpecialFolder.StartMenu)
+        Dim programs = IO.Path.Combine(startMenu, "Programs")
+
+        Dim shortcutPath = IO.Path.Combine(programs, "PlotWorks.lnk")
+
+        If IO.Path.Exists(shortcutPath) Then
+            IO.File.Delete(shortcutPath)
+        End If
+
+    End Sub
+
+    <RelayCommand>
+    Public Async Sub CheckForLanguageUpdates()
+        If Await LocalisationService.CheckForLanguageUpdate() Then
+            Await LocalisationService.LoadLanguage(UIConfiguration.Language)
+        End If
+    End Sub
+
+End Class

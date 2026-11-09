@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>PolyCut.Shared</RootNamespace>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <RootNamespace>PolyCut.Shared</RootNamespace>
+    <UseWPF>true</UseWPF>
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Svg" Version="3.4.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Open-path glyph data for the bundled Hershey single-line fonts. -->
+    <EmbeddedResource Include="Resources\hershey-glyphs.json" />
+    <!-- Stroke medians for the common Chinese characters (single-stroke Chinese). -->
+    <EmbeddedResource Include="Resources\hanzi-strokes.json" />
+  </ItemGroup>
+
+</Project>

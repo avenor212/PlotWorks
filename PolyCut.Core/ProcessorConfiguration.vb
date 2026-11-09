@@ -1,0 +1,182 @@
+Imports System.ComponentModel
+
+Imports CommunityToolkit.Mvvm.ComponentModel
+
+Partial Public Class ProcessorConfiguration : Inherits ObservableObject : Implements ISaveable
+
+    <ImplementsProperty(GetType(ISaveable), NameOf(ISaveable.Version))>
+    <ObservableProperty> Private _Version As Single = 0.2
+    <ObservableProperty> Private _SoftwareVersion As String = "0.7"
+
+    <ImplementsProperty(GetType(ISaveable), NameOf(ISaveable.Name))>
+    <ObservableProperty> Private _Name As String = "Configuration"
+
+    Public Enum ToolMode
+        Cut
+        Draw
+        Foil
+        Deboss
+        Engrave
+
+    End Enum
+
+    <ObservableProperty> Private _SelectedToolMode As ToolMode = ToolMode.Draw
+
+    'Shared Variables
+    <ObservableProperty> Private _Tolerance As Double = 0.01
+    <ObservableProperty> Private _AutoUnionText As Boolean = True
+    <ObservableProperty> Private _WorkSpeed As Double = 40
+    <ObservableProperty> Private _TravelSpeed As Double = 60
+    <ObservableProperty> Private _ZSpeed As Double = 10
+    <ObservableProperty> Private _WorkZ As Double = 5
+    <ObservableProperty> Private _TravelZ As Double = 10
+    <ObservableProperty> Private _SafeZ As Double = 10
+
+    <ObservableProperty> Private _Passes As Integer = 1
+    <ObservableProperty> Private _PassHeightDelta As Double = 0
+
+    <NotifyPropertyChangedFor(NameOf(Area))>
+    <ObservableProperty> Private _WorkAreaWidth As Double = 200
+    <NotifyPropertyChangedFor(NameOf(Area))>
+    <ObservableProperty> Private _WorkAreaHeight As Double = 200
+    <ObservableProperty> Private _ToolOffsetX As Double = 0
+    <ObservableProperty> Private _ToolOffsetY As Double = 0
+
+    'Per-tool installation offsets. These are added on top of the shared Toolhead Offset
+    <ObservableProperty> Private _CutOffsetX As Double = 0
+    <ObservableProperty> Private _CutOffsetY As Double = 0
+    <ObservableProperty> Private _DrawOffsetX As Double = 0
+    <ObservableProperty> Private _DrawOffsetY As Double = 0
+
+    <ObservableProperty> Private _ToolDownGCode As String = ""
+    <ObservableProperty> Private _ToolUpGCode As String = ""
+
+
+    <ObservableProperty> Private _CuttingConfig As New CuttingConfiguration
+    <ObservableProperty> Private _DrawingConfig As New DrawingConfiguration
+    <ObservableProperty> Private _ExportConfig As New ExportConfiguration
+
+    <ObservableProperty> Private _OptimisedToolPath As Boolean = True
+
+    <ObservableProperty> Private _ExtractOneColour As Boolean = False
+    <ObservableProperty> Private _ExtractionColor As String = ""
+    <ObservableProperty> Private _SkipBoundsCheck As Boolean = False
+    <ObservableProperty> Private _ClipToBounds As Boolean = False
+    <ObservableProperty> Private _SimplifyToolPaths As Boolean = True
+    <ObservableProperty> Private _SimplifyMergeAngle As Double = 0.1
+    <ObservableProperty> Private _SmallFeatureMergeThreshold As Double = 0.05
+
+    Public ReadOnly Property Area As String
+        Get
+            Return $"""0,0,{WorkAreaWidth},{WorkAreaHeight}"""
+        End Get
+    End Property
+
+
+
+    Public Function Clone() As ProcessorConfiguration
+        Dim c = DirectCast(Me.MemberwiseClone(), ProcessorConfiguration)
+
+        ' Deep-copy the reference-type sub-configs
+        c.CuttingConfig = Me.CuttingConfig?.Clone()
+        c.DrawingConfig = Me.DrawingConfig?.Clone()
+        c.ExportConfig = Me.ExportConfig?.Clone()
+
+        Return c
+    End Function
+
+
+
+End Class
+
+Partial Public Class CuttingConfiguration : Inherits ObservableObject
+
+    <NotifyPropertyChangedFor(NameOf(ToolRadius))>
+    <ObservableProperty> Private _ToolDiameter As Double = 0.9
+    <ObservableProperty> Private _Overcut As Double = 0
+    <ObservableProperty> Private _BladePathNoiseTolerance As Double = 0.05
+    <ObservableProperty> Private _CutWidthCompensation As Double = 0
+
+    Public ReadOnly Property ToolRadius
+        Get
+            Return ToolDiameter / 2
+        End Get
+    End Property
+
+    Public Function Clone() As CuttingConfiguration
+        Return DirectCast(Me.MemberwiseClone(), CuttingConfiguration)
+    End Function
+
+End Class
+
+Public Enum FillType
+    None
+    Hatch
+    CrossHatch
+    TriangularHatch
+    DiamondCrossHatch
+    Spiral
+    Radial
+    Contour
+End Enum
+
+Partial Public Class DrawingConfiguration : Inherits ObservableObject
+
+
+    <ObservableProperty> Private _MinStrokeWidth As Double = 1
+    <ObservableProperty> Private _ShadingAngle As Double = 45
+    <ObservableProperty> Private _KeepOutlines As Boolean = True
+
+    <ObservableProperty> Private _FillType As FillType = FillType.Hatch
+
+    <ObservableProperty> Private _AllowDrawingOverOutlines As Boolean = True
+    <ObservableProperty> Private _MaxStrokeWidth As Double = 1
+    <ObservableProperty> Private _ShadingThreshold As Double = 1
+    <ObservableProperty> Private _OutlinesBeforeFill As Boolean = False
+
+    <ObservableProperty> Private _PenWidth As Double = 0.4
+    <ObservableProperty> Private _PenWidthCompensation As Boolean = False
+    <ObservableProperty> Private _FillOutlineOverlap As Double = 100
+
+    Private Sub OnFillOutlineOverlapChanged(value As Double)
+        _FillOutlineOverlap = Math.Clamp(value, 0, 100)
+    End Sub
+
+
+    Public Function Clone() As DrawingConfiguration
+        Return DirectCast(Me.MemberwiseClone(), DrawingConfiguration)
+    End Function
+
+End Class
+
+
+
+Partial Public Class ExportConfiguration : Inherits ObservableObject
+
+    Public Enum ExporterType
+        Network
+        File
+    End Enum
+
+    <ObservableProperty> Private _Type As ExporterType = ExporterType.Network
+    <ObservableProperty> Private _FileDestination As String = Nothing
+    Private _DestinationIP As String = "http://klipper.local"
+    Public Property DestinationIP As String
+        Get
+            Return _DestinationIP
+        End Get
+        Set(value As String)
+            SetProperty(_DestinationIP, BuildURI(value, Nothing).ToString(), NameOf(DestinationIP))
+        End Set
+    End Property
+    <ObservableProperty> Private _DestinationPort As Integer = 7125
+    'Kept for backwards compatibility with saved projects. The A1 firmware rejects
+    'remote start (gcode_file), so uploads are manual-start only and this value is unused.
+    <ObservableProperty> Private _AutoPrint As Boolean = False
+
+    Public Function Clone() As ExportConfiguration
+        Return DirectCast(Me.MemberwiseClone(), ExportConfiguration)
+    End Function
+
+End Class
+

@@ -1,0 +1,389 @@
+<ui:FluentWindow x:Class="MainWindow"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                 xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+                 xmlns:loc="clr-namespace:LazyTranslate;assembly=LazyTranslate"
+                 xmlns:local="clr-namespace:PolyCut"
+                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                 xmlns:svg="http://sharpvectors.codeplex.com/runtime/"
+                 xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
+                 xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                 x:Name="MainWindowView"
+                 Title="PlotWorks"
+                 Width="1300"
+                 Height="750"
+                 MinWidth="700"
+                 d:DataContext="{d:DesignInstance Type=local:MainViewModel}"
+                 ui:Design.Background="{DynamicResource ApplicationBackgroundBrush}"
+                 ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                 ExtendsContentIntoTitleBar="True"
+                 Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                 RenderOptions.BitmapScalingMode="HighQuality"
+                 WindowBackdropType="Mica"
+                 WindowChrome.IsHitTestVisibleInChrome="True"
+                 mc:Ignorable="d">
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Closing" SourceObject="{Binding ElementName=MainWindowView}">
+            <i:InvokeCommandAction Command="{Binding MainViewClosingCommand}" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+    <Grid>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+
+        <Label Margin="0 15 0 0" HorizontalAlignment="Center"
+               Content="{Binding CurrentProjectName, FallbackValue=Project 1}"
+               Foreground="#40FFFFFF" IsHitTestVisible="False" />
+
+        <ui:TitleBar x:Name="MWTitleBar"
+                     Grid.Row="0" Grid.ColumnSpan="2"
+                     Background="Transparent" IsHitTestVisible="True">
+
+            <ui:TitleBar.Header>
+                <StackPanel Height="25" Orientation="Horizontal">
+                    <ui:ImageIcon Margin="15 2 8 0" Source="/PlotWorks;component/Resources/logo.ico" />
+                    <Label Width="350"
+                           Margin="0 3 0 0" VerticalAlignment="Center"
+                           Content="PlotWorks" Foreground="#40FFFFFF" IsHitTestVisible="True" />
+
+
+                </StackPanel>
+
+            </ui:TitleBar.Header>
+            <ui:TitleBar.CenterContent>
+                <StackPanel Orientation="Horizontal">
+                    <Grid Opacity="0.2">
+                        <Grid.Style>
+                            <Style TargetType="Grid">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsMouseOver, ElementName=MWTitleBar}" Value="True">
+                                        <DataTrigger.EnterActions>
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.15" />
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </DataTrigger.EnterActions>
+                                        <DataTrigger.ExitActions>
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetProperty="Opacity" To="0.2" Duration="0:0:0.15" />
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </DataTrigger.ExitActions>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Grid.Style>
+                        <Menu Margin="-295 1 0 0" d:Visibility="Visible">
+
+                            <Menu.Resources>
+                                <SolidColorBrush x:Key="ButtonBackgroundDisabled" Color="Transparent" />
+
+
+                            </Menu.Resources>
+
+                            <ui:MenuItem x:Name="FileMenu"
+                                         loc:L.Value="_File" local:MicaBackdrop.IsEnabled="True" local:MicaBackdrop.SamplePadding="0,0,140,260" local:MicaBackdrop.TintColor="#23FFFFFF"
+                                         Background="{Binding RelativeSource={RelativeSource Self}, Path=(local:MicaBackdrop.SurfaceBrush), TargetNullValue={StaticResource ApplicationBackgroundBrush}, FallbackValue={StaticResource ApplicationBackgroundBrush}}">
+                                <MenuItem.Resources>
+                                    <ImageBrush x:Key="FlyoutBackground" ImageSource="{Binding ElementName=FileMenu, Path=(local:MicaBackdrop.SurfaceImage)}" Stretch="Fill" />
+                                </MenuItem.Resources>
+
+                                <ui:MenuItem loc:L.Context="New Project" loc:L.Value="_New" local:MenuItemHelper.Footer="Ctrl + N"
+                                             Command="{Binding NewProjectCommand}" />
+                                <Separator />
+                                <MenuItem loc:L.Value="_Import SVG/Image..." local:MenuItemHelper.Footer="Ctrl + I" Command="{Binding BrowseSVGCommand}" />
+                                <MenuItem loc:L.Value="_Load Project" local:MenuItemHelper.Footer="Ctrl + O" Command="{Binding LoadProjectCommand}" />
+                                <MenuItem loc:L.Value="Recent Items" ItemsSource="{Binding UIConfiguration.RecentItems}"
+                                          IsEnabled="{Binding HasItems, RelativeSource={RelativeSource Self}}">
+                                    <MenuItem.ItemContainerStyle>
+                                        <Style TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
+                                            <Setter Property="Command" Value="{Binding DataContext.OpenRecentItemCommand, ElementName=MainWindowView}" />
+                                            <Setter Property="CommandParameter" Value="{Binding}" />
+                                            <Setter Property="HeaderTemplate">
+                                                <Setter.Value>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding}" />
+                                                    </DataTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </MenuItem.ItemContainerStyle>
+                                </MenuItem>
+                                <Separator />
+                                <MenuItem loc:L.Value="_Save" local:MenuItemHelper.Footer="Ctrl + S" Command="{Binding SaveProjectCommand}" />
+                                <MenuItem loc:L.Value="S_ave As..." local:MenuItemHelper.Footer="Ctrl + Shift + S" Command="{Binding SaveProjectAsCommand}" />
+
+                                <MenuItem loc:L.Value="Export">
+                                    <MenuItem loc:L.Value="_Export As SVG..." local:MenuItemHelper.Footer="Ctrl + E" Command="{Binding ExportSVGCommand}" />
+                                    <MenuItem loc:L.Value="导出 G-code 文件..." Command="{Binding ExportGCodeFileCommand}" />
+
+                                </MenuItem>
+
+                            </ui:MenuItem>
+
+                            <ui:MenuItem x:Name="EditMenu"
+                                         loc:L.Value="_Edit" local:MicaBackdrop.IsEnabled="True" local:MicaBackdrop.SamplePadding="0,0,140,260" local:MicaBackdrop.TintColor="#23FFFFFF"
+                                         Background="{Binding RelativeSource={RelativeSource Self}, Path=(local:MicaBackdrop.SurfaceBrush), TargetNullValue={StaticResource ApplicationBackgroundBrush}, FallbackValue={StaticResource ApplicationBackgroundBrush}}">
+                                <ui:MenuItem.Resources>
+                                    <ImageBrush x:Key="FlyoutBackground" ImageSource="{Binding ElementName=EditMenu, Path=(local:MicaBackdrop.SurfaceImage)}" Stretch="Fill" />
+                                </ui:MenuItem.Resources>
+                                <ui:MenuItem loc:L.Value="C_ut" local:MenuItemHelper.Footer="Ctrl + X"
+                                             Command="{Binding CutSelectionCommand}"
+                                             Icon="{ui:SymbolIcon Symbol=Cut20}" />
+
+                                <ui:MenuItem loc:L.Value="_Copy" local:MenuItemHelper.Footer="Ctrl + C"
+                                             Command="{Binding CopySelectionCommand}"
+                                             Icon="{ui:SymbolIcon Copy20}" />
+
+                                <ui:MenuItem loc:L.Value="_Paste" local:MenuItemHelper.Footer="Ctrl + V"
+                                             Command="{Binding PasteClipboardCommand}"
+                                             Icon="{ui:SymbolIcon Symbol=ClipboardPaste20}" />
+
+                                <Separator />
+
+                                <ui:MenuItem loc:L.Value="_Select All" local:MenuItemHelper.Footer="Ctrl + A"
+                                             Command="{Binding SelectAllCommand}"
+                                             Icon="{ui:SymbolIcon Symbol=CopySelect20}"
+                                             IsEnabled="{Binding Document.HasDrawables, Mode=OneWay}" />
+
+                            </ui:MenuItem>
+
+
+                            <ui:MenuItem x:Name="ViewMenu"
+                                         loc:L.Value="_View" local:MicaBackdrop.IsEnabled="True" local:MicaBackdrop.SamplePadding="0,0,140,260" local:MicaBackdrop.TintColor="#23FFFFFF"
+                                         Background="{Binding RelativeSource={RelativeSource Self}, Path=(local:MicaBackdrop.SurfaceBrush), TargetNullValue={StaticResource ApplicationBackgroundBrush}, FallbackValue={StaticResource ApplicationBackgroundBrush}}">
+                                <ui:MenuItem.Resources>
+                                    <ImageBrush x:Key="FlyoutBackground" ImageSource="{Binding ElementName=ViewMenu, Path=(local:MicaBackdrop.SurfaceImage)}" Stretch="Fill" />
+                                </ui:MenuItem.Resources>
+                                <StackPanel Orientation="Horizontal">
+                                    <ToggleButton IsChecked="{Binding UIConfiguration.ShowGrid, Mode=TwoWay}">
+                                        <ToggleButton.Template>
+                                            <ControlTemplate>
+                                                <ContentControl>
+                                                    <ContentControl.Style>
+                                                        <Style TargetType="ContentControl">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource AncestorType={x:Type ToggleButton}}}" Value="True">
+                                                                    <Setter Property="Content">
+                                                                        <Setter.Value>
+                                                                            <ui:Card Padding="8 4" Background="Transparent" BorderBrush="{StaticResource PaletteBlueBrush}">
+                                                                                <ui:SymbolIcon Symbol="Eye24" />
+                                                                            </ui:Card>
+                                                                        </Setter.Value>
+                                                                    </Setter>
+
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource AncestorType={x:Type ToggleButton}}}" Value="False">
+                                                                    <Setter Property="Content">
+                                                                        <Setter.Value>
+                                                                            <ui:Card Padding="8 4" Background="Transparent" BorderBrush="{StaticResource ControlFillColorSecondaryBrush}">
+                                                                                <!--  Replace with your unchecked icon  -->
+                                                                                <ui:SymbolIcon Symbol="EyeOff24" />
+                                                                            </ui:Card>
+                                                                        </Setter.Value>
+                                                                    </Setter>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </ContentControl.Style>
+                                                </ContentControl>
+                                            </ControlTemplate>
+                                        </ToggleButton.Template>
+                                    </ToggleButton>
+                                    <Label Margin="10 4 10 0" loc:L.Value="Show Grid" />
+                                </StackPanel>
+
+                                <StackPanel Orientation="Horizontal">
+                                    <ToggleButton IsChecked="{Binding UIConfiguration.ShowWorkArea, Mode=TwoWay}">
+                                        <ToggleButton.Template>
+                                            <ControlTemplate>
+                                                <ContentControl>
+                                                    <ContentControl.Style>
+                                                        <Style TargetType="ContentControl">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource AncestorType={x:Type ToggleButton}}}" Value="True">
+                                                                    <Setter Property="Content">
+                                                                        <Setter.Value>
+                                                                            <ui:Card Padding="8 4" Background="Transparent" BorderBrush="{StaticResource PaletteBlueBrush}">
+                                                                                <ui:SymbolIcon Symbol="Eye24" />
+                                                                            </ui:Card>
+                                                                        </Setter.Value>
+                                                                    </Setter>
+
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource AncestorType={x:Type ToggleButton}}}" Value="False">
+                                                                    <Setter Property="Content">
+                                                                        <Setter.Value>
+                                                                            <ui:Card Padding="8 4" Background="Transparent" BorderBrush="{StaticResource ControlFillColorSecondaryBrush}">
+                                                                                <!--  Replace with your unchecked icon  -->
+                                                                                <ui:SymbolIcon Symbol="EyeOff24" />
+                                                                            </ui:Card>
+                                                                        </Setter.Value>
+                                                                    </Setter>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </ContentControl.Style>
+                                                </ContentControl>
+                                            </ControlTemplate>
+                                        </ToggleButton.Template>
+                                    </ToggleButton>
+                                    <Label Margin="10 4 10 0" loc:L.Value="Show Printer Working Area" />
+                                </StackPanel>
+
+                                <MenuItem loc:L.Value="适应窗口" local:MenuItemHelper.Footer="Ctrl + 0"
+                                          Command="{Binding ResetViewCommand}" />
+
+                            </ui:MenuItem>
+
+                            <Separator />
+                            <ui:MenuItem x:Name="UndoButtonGlobal"
+                                         Background="Transparent" BorderThickness="0"
+                                         Command="{Binding UndoCommand}"
+                                         Icon="{ui:SymbolIcon ArrowUndo16}" />
+                            <ui:MenuItem x:Name="RedoButtonGlobal"
+                                         Background="Transparent" BorderThickness="0"
+                                         Command="{Binding RedoCommand}"
+                                         Icon="{ui:SymbolIcon ArrowRedo16}" />
+
+
+                        </Menu>
+                    </Grid>
+
+                </StackPanel>
+
+
+
+
+            </ui:TitleBar.CenterContent>
+        </ui:TitleBar>
+
+        <ui:NavigationView x:Name="NavigationView"
+                           Grid.Row="1" Grid.RowSpan="2" Grid.ColumnSpan="2"
+                           IsBackButtonVisible="Collapsed" PaneDisplayMode="Top" PaneTitle="Bambu Lab A1" SnapsToDevicePixels="True" Transition="FadeIn"
+                           TransitionDuration="250" UseLayoutRounding="True">
+            <ui:NavigationView.MenuItems>
+                <ui:NavigationViewItem Margin="15 2"
+                                       loc:L.Context="Home Tab" loc:L.Value="Home" NavigationCacheMode="Required"
+                                       Tag="{Binding}"
+                                       TargetPageType="{x:Type local:SVGPage}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:SymbolIcon Filled="True" Foreground="{DynamicResource AccentFillColorDefaultBrush}" Symbol="Home12" />
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
+                <ui:NavigationViewItem Margin="15 2"
+                                       loc:L.Context="Preview Tab" loc:L.Value="Preview" NavigationCacheMode="Required"
+                                       Tag="{Binding}"
+                                       TargetPageType="{x:Type local:PreviewPage}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:SymbolIcon Symbol="DrawShape24" />
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
+            </ui:NavigationView.MenuItems>
+
+            <ui:NavigationView.FooterMenuItems>
+
+                <ui:NavigationViewItem x:Name="GenerateGCodeButton">
+
+                    <StackPanel Orientation="Horizontal">
+
+                        <ui:Button x:Name="GenerateActionButton"
+                                   Height="32" Visibility="Collapsed"
+                                   Command="{Binding GenerateGCodeCommand}"
+                                   IsEnabled="{Binding GenerateGCodeCommand.IsRunning, Converter={StaticResource InverseBoolConverter}}">
+
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock VerticalAlignment="Center" loc:L.Value="Generate" Visibility="{Binding GenerateGCodeCommand.IsRunning, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
+                                <TextBlock VerticalAlignment="Center" loc:L.Value="Generating ..." Visibility="{Binding GenerateGCodeCommand.IsRunning, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                <ui:ProgressRing Width="18" Height="18"
+                                                 Margin="10 0 0 0"
+                                                 IsIndeterminate="True"
+                                                 Visibility="{Binding GenerateGCodeCommand.IsRunning, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            </StackPanel>
+
+                        </ui:Button>
+
+                        <ui:Button x:Name="UploadActionButton"
+                                   Height="32" Visibility="Collapsed"
+                                   Command="{Binding UploadGCodeCommand}">
+
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock VerticalAlignment="Center" loc:L.Value="Upload" Visibility="{Binding UploadGCodeCommand.IsRunning, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
+                                <TextBlock VerticalAlignment="Center" loc:L.Value="Uploading ..." Visibility="{Binding UploadGCodeCommand.IsRunning, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                <ui:ProgressRing Width="18" Height="18"
+                                                 Margin="10 0 0 0"
+                                                 IsIndeterminate="True"
+                                                 Visibility="{Binding UploadGCodeCommand.IsRunning, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            </StackPanel>
+
+                        </ui:Button>
+
+                    </StackPanel>
+
+                </ui:NavigationViewItem>
+                <ui:NavigationViewItem Margin="-5 0 15 1"
+                                       NavigationCacheMode="Required"
+                                       Tag="{Binding}"
+                                       TargetPageType="{x:Type local:SettingsPage}">
+
+                    <ui:SymbolIcon Margin="0 0 -3 0" FontSize="16" Symbol="Settings48" />
+
+                </ui:NavigationViewItem>
+            </ui:NavigationView.FooterMenuItems>
+
+            <ui:NavigationView.ContentOverlay>
+                <Grid>
+                    <ui:SnackbarPresenter x:Name="SnackbarPresenter" />
+                </Grid>
+            </ui:NavigationView.ContentOverlay>
+        </ui:NavigationView>
+        <ui:ContentDialogHost x:Name="RootContentDialog"
+                              Grid.Row="0" Grid.RowSpan="2"
+                              Panel.ZIndex="200"
+                              d:Visibility="Collapsed" ClipToBounds="True" IsDisableSiblingsEnabled="True" />
+        <ui:SnackbarPresenter x:Name="RootSnackbar"
+                              Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Grid.ColumnSpan="2"
+                              Panel.ZIndex="201"
+                              d:Visibility="Collapsed" />
+
+    </Grid>
+    <ui:FluentWindow.InputBindings>
+
+        <KeyBinding Command="{Binding UndoCommand}" Gesture="Ctrl+Z" />
+        <KeyBinding Command="{Binding RedoCommand}" Gesture="Ctrl+Y" />
+        <KeyBinding Command="{Binding CopySelectionCommand}" Gesture="Ctrl+C" />
+        <KeyBinding Command="{Binding CutSelectionCommand}" Gesture="Ctrl+X" />
+        <KeyBinding Command="{Binding PasteClipboardCommand}" Gesture="Ctrl+V" />
+                        <KeyBinding Command="{Binding DuplicateSelectionCommand}" Gesture="Ctrl+D" />
+        <KeyBinding Command="{Binding SaveProjectCommand}" Gesture="Ctrl+S" />
+        <KeyBinding Command="{Binding SaveProjectAsCommand}" Gesture="Ctrl+Shift+S" />
+        <KeyBinding Command="{Binding LoadProjectCommand}" Gesture="Ctrl+O" />
+        <KeyBinding Command="{Binding NewProjectCommand}" Gesture="Ctrl+N" />
+        <KeyBinding Command="{Binding ExportSVGCommand}" Gesture="Ctrl+E" />
+        <KeyBinding Command="{Binding BrowseSVGCommand}" Gesture="Ctrl+I" />
+        <KeyBinding Command="{Binding SelectAllCommand}" Gesture="Ctrl+A" />
+        <KeyBinding Command="{Binding GenerateAndUploadCommand}" Gesture="F5" />
+
+        <KeyBinding Command="{Binding MoveSelectedItemsCanvasUpCommand}" Gesture="Ctrl+OemCloseBrackets" />
+        <KeyBinding Command="{Binding MoveSelectedItemsCanvasDownCommand}" Gesture="Ctrl+OemOpenBrackets" />
+        <KeyBinding Command="{Binding MoveSelectedItemsCanvasToTopCommand}" Gesture="Ctrl+Shift+OemCloseBrackets" />
+        <KeyBinding Command="{Binding MoveSelectedItemsCanvasToBottomCommand}" Gesture="Ctrl+Shift+OemOpenBrackets" />
+
+        <KeyBinding Command="{Binding GroupSelectedCommand}" Gesture="Ctrl+G" />
+        <KeyBinding Command="{Binding UngroupSelectedCommand}" Gesture="Ctrl+Shift+G" />
+
+    </ui:FluentWindow.InputBindings>
+
+
+</ui:FluentWindow>

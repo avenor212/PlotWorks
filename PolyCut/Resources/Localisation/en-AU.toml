@@ -1,0 +1,437 @@
+﻿# PolyCut Localisation
+# @version 2
+# @programversion 0.11.0
+
+# ===================
+# Translations
+
+"8 character access code" = "8 character access code"
+"A printer with the name '{0}' already exists. Do you want to overwrite it?" = "A printer with the name '{0}' already exists. Do you want to overwrite it?"
+"Access Code" = "Access Code"
+"Accounts for pen width to keep enclosed shapes dimensionally accurate. Narrow features may disappear; open and unfilled paths are unchanged." = "Accounts for pen width to keep enclosed shapes dimensionally accurate. Narrow features may disappear; open and unfilled paths are unchanged."
+"Adaptive Sampling" = "Adaptive Sampling"
+"Adaptive Sampling Sensitivity" = "Adaptive Sampling Sensitivity"
+"Adaptive Sampling Window" = "Adaptive Sampling Window"
+"Add Printer" = "Add Printer"
+"Added Preset" = "Added Preset"
+"Alignment" = "Alignment"
+"Allow Travel in Outlines" = "Allow Travel in Outlines"
+"An unknown error occurred" = "An unknown error occurred"
+"Arrange" = "Arrange"
+"Automatically quantizes the palette down to at most N colours. Set to 0 for no limit, or choose a value to restrict the number of colours used." = "Automatically quantizes the palette down to at most N colours. Set to 0 for no limit, or choose a value to restrict the number of colours used."
+"Bambu Lab A1" = "Bambu Lab A1"
+"Bambu Lab A1 Connection" = "Bambu Lab A1 Connection"
+"Bambu Lab A1 服务不可用" = "Bambu Lab A1 服务不可用"
+"Bed Dimensions" = "Bed Dimensions"
+"Blade Settings" = "Blade Settings"
+"Boolean operation failed." = "Boolean operation failed."
+"C_ut" = "C_ut"
+"Cancel" = "Cancel"
+"Cancel Preview" = "Cancel Preview"
+"Cancel regeneration" = "Cancel regeneration"
+"Cannot perform boolean operations on open paths. All shapes must be closed." = "Cannot perform boolean operations on open paths. All shapes must be closed."
+"Cleans up toolpaths by merging extremely close vertices, fragments, and almost-collinear segments." = "Cleans up toolpaths by merging extremely close vertices, fragments, and almost-collinear segments."
+"Click to view release notes and download" = "Click to view release notes and download"
+"Close" = "Close"
+"Colour" = "Colour"
+"Combine" = "Combine"
+"Combine Shapes" = "Combine Shapes"
+"Compensates for material removed by the thickness of the blade, ensuring that wanted regions do not end up smaller than they should be. Can be useful if working on extremely small objects (e.g. PCB traces) with a cutting knife, or if using a laser to compensate for the laser width. Contours are offset by half this value." = "Compensates for material removed by the thickness of the blade, ensuring that wanted regions do not end up smaller than they should be. Can be useful if working on extremely small objects (e.g. PCB traces) with a cutting knife, or if using a laser to compensate for the laser width. Contours are offset by half this value."
+"Controls how much the fill overlaps retained outlines. 0% touches their inner edge; 100% reaches their outer edge. Requires pen-width compensation and Keep Outlines." = "Controls how much the fill overlaps retained outlines. 0% touches their inner edge; 100% reaches their outer edge. Requires pen-width compensation and Keep Outlines."
+"Creating a new project will clear the current workspace. Continue?" = "Creating a new project will clear the current workspace. Continue?"
+"Cursor Colour" = "Cursor Colour"
+"Curve simplification tolerance in pixels (try 0.5-2.5). Higher values simplify more aggressively at the cost of precision." = "Curve simplification tolerance in pixels (try 0.5-2.5). Higher values simplify more aggressively at the cost of precision."
+"Curve-fitting Precision" = "Curve-fitting Precision"
+"Cut Offset" = "Cut Offset"
+"Cut level for the hierarchical watershed algorithm, 0-255. Higher values cut the region hierarchy at a finer level, producing more, smaller regions that follow content detail closely; lower values merge areas into fewer, larger regions." = "Cut level for the hierarchical watershed algorithm, 0-255. Higher values cut the region hierarchy at a finer level, producing more, smaller regions that follow content detail closely; lower values merge areas into fewer, larger regions."
+"Cut lines will be placed at minimum this close to objects." = "Cut lines will be placed at minimum this close to objects."
+"Darkest shading spacing" = "Darkest shading spacing"
+"Default: {0}" = "Default: {0}"
+"Delete" = "Delete"
+"Desired Exterior Margin" = "Desired Exterior Margin"
+"Disabled" = "Disabled"
+"Discards detected patches smaller than this many pixels, 0-128. Increase this to clean up small stray specks and noise left over from tracing; decrease it to preserve fine detail." = "Discards detected patches smaller than this many pixels, 0-128. Increase this to clean up small stray specks and noise left over from tracing; decrease it to preserve fine detail."
+"Draw Offset" = "Draw Offset"
+"Draw Outlines Before Fill" = "Draw Outlines Before Fill"
+"Drawing Group is already empty" = "Drawing Group is already empty"
+"Drawing Line Colour" = "Drawing Line Colour"
+"Drawing Settings" = "Drawing Settings"
+"Enable Pen Width Compensation" = "Enable Pen Width Compensation"
+"Enabled" = "Enabled"
+"Enter Printer Name" = "Enter Printer Name"
+"Enter hex color (e.g., #FFFF0000 or #FF0000)" = "Enter hex color (e.g., #FFFF0000 or #FF0000)"
+"Error" = "Error"
+"Error Saving File" = "Error Saving File"
+"Experimental Renderer" = "Experimental Renderer"
+"Export" = "Export"
+"Extract One Colour" = "Extract One Colour"
+"Failed to load language: {0}" = "Failed to load language: {0}"
+"Failed to load project" = "Failed to load project"
+"Failed to save project" = "Failed to save project"
+"File Saved" = "File Saved"
+"File name: " = "File name: "
+"Fill" = "Fill"
+"Fill / Outline Overlap" = "Fill / Outline Overlap"
+"Fill Colour" = "Fill Colour"
+"Fill Settings" = "Fill Settings"
+"Fill Style" = "Fill Style"
+"Filters out and smooths blade traversal on noisy paths. This avoids overcompensating travel paths when a blade offset is set. Set to zero to disable." = "Filters out and smooths blade traversal on noisy paths. This avoids overcompensating travel paths when a blade offset is set. Set to zero to disable."
+"Finish Import" = "Finish Import"
+"Fixed brightness cutoff (0-255) used for Black & White mode. Pixels darker than this value become foreground (black); pixels at or above it become background (white). Ignored when Adaptive Sampling is enabled." = "Fixed brightness cutoff (0-255) used for Black & White mode. Pixels darker than this value become foreground (black); pixels at or above it become background (white). Ignored when Adaptive Sampling is enabled."
+"GCode" = "GCode"
+"Generate" = "Generate"
+"Generating ..." = "Generating ..."
+"Generating..." = "Generating..."
+"Global Settings" = "Global Settings"
+"Grid Settings" = "Grid Settings"
+"Gridline Colour" = "Gridline Colour"
+"Group" = "Group"
+"Hardware" = "Hardware"
+"Home" = "Home"
+"Host Address" = "Host Address"
+"How far to place the weeding box from the edges of objects" = "How far to place the weeding box from the edges of objects"
+"Import as SVG" = "Import as SVG"
+"Increasing the thickness will not affect the actual Gcode stroke width. However, setting it to zero will disable the stroke." = "Increasing the thickness will not affect the actual Gcode stroke width. However, setting it to zero will disable the stroke."
+"Inset (Bottom)" = "Inset (Bottom)"
+"Inset (Left)" = "Inset (Left)"
+"Inset (Right)" = "Inset (Right)"
+"Inset (Top)" = "Inset (Top)"
+"Jog" = "Jog"
+"Keep Outlines" = "Keep Outlines"
+"Kerf Compensation" = "Kerf Compensation"
+"Language Load Error" = "Language Load Error"
+"Lightest shading spacing" = "Lightest shading spacing"
+"Live status" = "Live status"
+"Load Project" = "Load Project"
+"Loading a project will clear the current workspace. Continue?" = "Loading a project will clear the current workspace. Continue?"
+"Maximum Colours (0 = Unlimited)" = "Maximum Colours (0 = Unlimited)"
+"Maximum deviation when merging small features between nearly aligned segments. Set to zero to disable this cleanup." = "Maximum deviation when merging small features between nearly aligned segments. Set to zero to disable this cleanup."
+"Merge Angle" = "Merge Angle"
+"Merge Threshold" = "Merge Threshold"
+"Minimum Inter-Object Margin" = "Minimum Inter-Object Margin"
+"Minimum colour difference required between adjacent gradient layers, 0-255. Higher values merge similar shades into fewer, flatter colour bands; smaller values preserve smoother gradients with more distinct layers." = "Minimum colour difference required between adjacent gradient layers, 0-255. Higher values merge similar shades into fewer, flatter colour bands; smaller values preserve smoother gradients with more distinct layers."
+"New Project" = "New Project"
+"No groups selected to ungroup" = "No groups selected to ungroup"
+"No intersection found. The selected shapes do not overlap." = "No intersection found. The selected shapes do not overlap."
+"No paths on canvas" = "No paths on canvas"
+"Noise Tolerance" = "Noise Tolerance"
+"Number of Passes" = "Number of Passes"
+"Number of decimal places used when writing path coordinates. Higher precision preserves shape accuracy at the cost of a longer processing times; lower precision is faster but can be coarser." = "Number of decimal places used when writing path coordinates. Higher precision preserves shape accuracy at the cost of a longer processing times; lower precision is faster but can be coarser."
+"Number of significant bits kept per RGB channel, 1-8. Higher precision preserves subtle colour variation and more distinct clusters; lower precision merges similar colours together for a simpler, more posterised palette." = "Number of significant bits kept per RGB channel, 1-8. Higher precision preserves subtle colour variation and more distinct clusters; lower precision merges similar colours together for a simpler, more posterised palette."
+"Optimise Drawing Paths" = "Optimise Drawing Paths"
+"Overcut" = "Overcut"
+"Overwrite Printer?" = "Overwrite Printer?"
+"Path Precision" = "Path Precision"
+"Path Simplification" = "Path Simplification"
+"Pen Width" = "Pen Width"
+"Pen height" = "Pen height"
+"Percentage below the local mean brightness a pixel must fall to be treated as foreground (default 15%). Higher sensitivity picks up subtler contrast changes; lower sensitivity requires stronger local contrast before a boundary is detected." = "Percentage below the local mean brightness a pixel must fall to be treated as foreground (default 15%). Higher sensitivity picks up subtler contrast changes; lower sensitivity requires stronger local contrast before a boundary is detected."
+"Preview Page Settings" = "Preview Page Settings"
+"Printer Configuration" = "Printer Configuration"
+"Printer Control" = "Printer Control"
+"Printer Name:" = "Printer Name:"
+"Printer name is empty" = "Printer name is empty"
+"Printer not saved. Name already exists." = "Printer not saved. Name already exists."
+"Printer serial number" = "Printer serial number"
+"Processing Settings" = "Processing Settings"
+"Project Loaded" = "Project Loaded"
+"Project Saved" = "Project Saved"
+"Properties" = "Properties"
+"Recent Items" = "Recent Items"
+"Regenerate Weeding Boxes" = "Regenerate Weeding Boxes"
+"Regenerating..." = "Regenerating..."
+"Region Detection" = "Region Detection"
+"Region Detection Settings" = "Region Detection Settings"
+"Reload Languages. Checks online for updated language definitions" = "Reload Languages. Checks online for updated language definitions"
+"Requires: {0}" = "Requires: {0}"
+"Rotation" = "Rotation"
+"SVG Exported" = "SVG Exported"
+"S_ave As..." = "S_ave As..."
+"Save" = "Save"
+"Save GCode" = "Save GCode"
+"Saved Preset" = "Saved Preset"
+"Saved to: {0}" = "Saved to: {0}"
+"Scaling may not be correct" = "Scaling may not be correct"
+"Select at least 2 shapes to combine" = "Select at least 2 shapes to combine"
+"Select at least 2 shapes to group" = "Select at least 2 shapes to group"
+"Send Preview (A1)" = "Send Preview (A1)"
+"Send to A1" = "Send to A1"
+"Sends just the bounding box to the printer for preview, which runs in the travel height." = "Sends just the bounding box to the printer for preview, which runs in the travel height."
+"Serial Number" = "Serial Number"
+"Shading Threshold" = "Shading Threshold"
+"Shading angle" = "Shading angle"
+"Show Grid" = "Show Grid"
+"Show Printer Working Area" = "Show Printer Working Area"
+"Show Travel Moves" = "Show Travel Moves"
+"Simplify Toolpaths" = "Simplify Toolpaths"
+"Size in pixels of the local neighbourhood sampled when computing the adaptive threshold (0 = auto). Larger windows average over a bigger area for smoother results; smaller windows react more precisely to local lighting changes." = "Size in pixels of the local neighbourhood sampled when computing the adaptive threshold (0 = auto). Larger windows average over a bigger area for smoother results; smaller windows react more precisely to local lighting changes."
+"Spacing" = "Spacing"
+"Speckle Filtering" = "Speckle Filtering"
+"Stacking" = "Stacking"
+"Start Menu Shortcut" = "Start Menu Shortcut"
+"Stroke" = "Stroke"
+"Stroke Colour" = "Stroke Colour"
+"Stroke Thickness" = "Stroke Thickness"
+"Style" = "Style"
+"Subtraction resulted in an empty geometry. The shapes may not overlap or the result is fully subtracted." = "Subtraction resulted in an empty geometry. The shapes may not overlap or the result is fully subtracted."
+"The A1 must be in LAN Mode with Developer Mode enabled. The access code is the MQTT password (TLS, port 8883)." = "The A1 must be in LAN Mode with Developer Mode enabled. The access code is the MQTT password (TLS, port 8883)."
+"This file no longer exists and has been removed from the list" = "This file no longer exists and has been removed from the list"
+"Threshold" = "Threshold"
+"Tool Config" = "Tool Config"
+"Tool Diameter" = "Tool Diameter"
+"Tool Offsets" = "Tool Offsets"
+"Toolhead Offset" = "Toolhead Offset"
+"Toolpath corners" = "Toolpath corners"
+"Tracing Mode" = "Tracing Mode"
+"Transform" = "Transform"
+"Travel" = "Travel"
+"Travel Line Colour" = "Travel Line Colour"
+"Travel Speed" = "Travel Speed"
+"UI Language" = "UI Language"
+"Ungroup" = "Ungroup"
+"Union operation resulted in an empty geometry. This should not happen." = "Union operation resulted in an empty geometry. This should not happen."
+"Unknown SVG Unit Type: " = "Unknown SVG Unit Type: "
+"Update Available ▸ Version {0}" = "Update Available ▸ Version {0}"
+"Update Preview" = "Update Preview"
+"Upload" = "Upload"
+"Uploading ..." = "Uploading ..."
+"Uploads the G-code to the A1 over FTPS, then starts printing over MQTT." = "Uploads the G-code to the A1 over FTPS, then starts printing over MQTT."
+"Used when objects are close to each other and you want the generator to place a weeding cut between them." = "Used when objects are close to each other and you want the generator to place a weeding cut between them."
+"Useful to clean up tiny nodes extra nodes on otherwise straight lines that could introduce micro bends that affect quality." = "Useful to clean up tiny nodes extra nodes on otherwise straight lines that could introduce micro bends that affect quality."
+"Uses adaptive thresholding instead of a single fixed cutoff. Ideal for scans or photos with uneven lighting, since the threshold is recalculated locally across the image rather than applied globally." = "Uses adaptive thresholding instead of a single fixed cutoff. Ideal for scans or photos with uneven lighting, since the threshold is recalculated locally across the image rather than applied globally."
+"Weeding Box Options" = "Weeding Box Options"
+"Weeding Boxes" = "Weeding Boxes"
+"Work" = "Work"
+"Work Speed" = "Work Speed"
+"Working Area" = "Working Area"
+"Workspace cleared" = "Workspace cleared"
+"XOR operation resulted in an empty geometry. The shapes may be identical." = "XOR operation resulted in an empty geometry. The shapes may be identical."
+"Z Height" = "Z Height"
+"Z Offset Per Pass" = "Z Offset Per Pass"
+"_Copy" = "_Copy"
+"_Edit" = "_Edit"
+"_Export As SVG..." = "_Export As SVG..."
+"_File" = "_File"
+"_Import SVG/Image..." = "_Import SVG/Image..."
+"_Load Project" = "_Load Project"
+"_Paste" = "_Paste"
+"_Save" = "_Save"
+"_Select All" = "_Select All"
+"_View" = "_View"
+"version" = "version"
+"上传文件名" = "上传文件名"
+"保留当前内容" = "保留当前内容"
+"发送到 A1 失败" = "发送到 A1 失败"
+"取消" = "取消"
+"导出 G-code 文件..." = "导出 G-code 文件..."
+"已上传 {0} 到 {1}，请在打印机屏幕上手动启动" = "已上传 {0} 到 {1}，请在打印机屏幕上手动启动"
+"已发送到 A1" = "已发送到 A1"
+"未配置打印机" = "未配置打印机"
+"清空并打开" = "清空并打开"
+"清空并新建" = "清空并新建"
+"适应窗口" = "适应窗口"
+
+[context."3D Printer Host Type and address"]
+"Host Type" = "Host Type"
+
+[context."3D Printer/Machine"]
+"Printer" = "Printer"
+
+[context."Allow Travel in Outlines Tooltip"]
+"Allows the pen to travel through shape outlines without lifting the pen up to start the next line." = "Allows the pen to travel through shape outlines without lifting the pen up to start the next line."
+"Requires \"Optimise Drawing Paths\" to be enabled. Can massively improve overall speed" = "Requires \"Optimise Drawing Paths\" to be enabled. Can massively improve overall speed"
+
+[context."Arrange objects on canvas"]
+"Bring Forward" = "Bring Forward"
+"Bring To Front" = "Bring To Front"
+"Send Backwards" = "Send Backwards"
+"Send To Back" = "Send To Back"
+
+[context."Bambu Lab A1 Connection"]
+"Access Code" = "Access Code"
+"Host Address" = "Host Address"
+"Serial Number" = "Serial Number"
+
+[context."Bitmap to SVG Keyboard Controls Guide"]
+"Alt Key" = "Alt Key"
+"Controls" = "Controls"
+"Ctrl + Click" = "Ctrl + Click"
+"Ctrl + Hover" = "Ctrl + Hover"
+"Ctrl + Shift + Click" = "Ctrl + Shift + Click"
+"Enables/Disables ALL regions that match the colour of the region under the cursor" = "Enables/Disables ALL regions that match the colour of the region under the cursor"
+"Enables/Disables the shape region under the cursor, dictating whether it will be included in the import" = "Enables/Disables the shape region under the cursor, dictating whether it will be included in the import"
+"Highlights the shape region under the cursor" = "Highlights the shape region under the cursor"
+"Note: You may need to reduce the 'Maximum Colours' setting if not all expected regions are enabled/disabled" = "Note: You may need to reduce the 'Maximum Colours' setting if not all expected regions are enabled/disabled"
+"Shows an overlay of the original image" = "Shows an overlay of the original image"
+
+[context."Boolean Operations"]
+"Exclude" = "Exclude"
+"Intersect" = "Intersect"
+"Subtract" = "Subtract"
+"Union" = "Union"
+
+[context."Clipboard Actions"]
+"Copy" = "Copy"
+"Cut" = "Cut"
+"Paste" = "Paste"
+"Select All" = "Select All"
+
+[context."Curve-fitting Precision Tooltip"]
+"Curved lines are approximated as straight lines when converted to GCode. This sets the effective smallest length that each segment of the curve should be. Smaller values increase accuracy, but massively increase processing time." = "Curved lines are approximated as straight lines when converted to GCode. This sets the effective smallest length that each segment of the curve should be. Smaller values increase accuracy, but massively increase processing time."
+
+[context."Custom GCode Entries"]
+"After reaching Work Z, activates before the draw step" = "After reaching Work Z, activates before the draw step"
+"After the bounding-box preview runs" = "After the bounding-box preview runs"
+"After the draw step, before lifting or travel. Also runs at job start/end" = "After the draw step, before lifting or travel. Also runs at job start/end"
+"After the final lift to Travel Z at the end of the job" = "After the final lift to Travel Z at the end of the job"
+"Before initial positioning at the start of the job" = "Before initial positioning at the start of the job"
+"Before the bounding-box preview runs" = "Before the bounding-box preview runs"
+"Custom GCode" = "Custom GCode"
+"End GCode" = "End GCode"
+"End GCode used for the bounding-box preview" = "End GCode used for the bounding-box preview"
+"Optional commands to activate a tool after moving to the work Z height, before cutting or drawing. Can be used to activate a laser/spindle or issue a custom 'pen down' GCode" = "Optional commands to activate a tool after moving to the work Z height, before cutting or drawing. Can be used to activate a laser/spindle or issue a custom 'pen down' GCode"
+"Optional commands to deactivate a tool before lifting or travelling, including initial positioning and job completion." = "Optional commands to deactivate a tool before lifting or travelling, including initial positioning and job completion."
+"Preview End GCode" = "Preview End GCode"
+"Preview Start GCode" = "Preview Start GCode"
+"Start GCode" = "Start GCode"
+"Start GCode used for the bounding-box preview" = "Start GCode used for the bounding-box preview"
+"Tool Off GCode" = "Tool Off GCode"
+"Tool On GCode" = "Tool On GCode"
+
+[context."Darkest Shading Spacing Tooltip"]
+"How far apart drawn lines should be when shading the darkest parts of the image." = "How far apart drawn lines should be when shading the darkest parts of the image."
+
+[context."Drawing/shape elements"]
+"Elements" = "Elements"
+
+[context."Extract One Colour Tooltip"]
+"Processes only objects with the specified colour, and ignores all others." = "Processes only objects with the specified colour, and ignores all others."
+
+[context."Fill Style Tooltip"]
+"The method used to fill shapes" = "The method used to fill shapes"
+
+[context."Font Styling"]
+"Font" = "Font"
+"Size (pt)" = "Size (pt)"
+
+[context."Grid Settings"]
+"Canvas Color" = "Canvas Color"
+
+[context."Home Tab"]
+"Home" = "Home"
+
+[context."Keep Outlines Tooltip"]
+"Disable this if you want to shade in an area without the area being outlined." = "Disable this if you want to shade in an area without the area being outlined."
+"Whether shape outlines should be drawn, or ignored." = "Whether shape outlines should be drawn, or ignored."
+
+[context."Lightest Shading Spacing Tooltip"]
+"How far apart drawn lines should be when shading the lightest parts of the image." = "How far apart drawn lines should be when shading the lightest parts of the image."
+
+[context."Merge Angle Tooltip"]
+"Angle (in degrees) between two lines, below which we merge them into a single straight line. Increasing this value (~1-5) can help when using a cutter, as it reduces the frequency of corrective swivels being made that could cause tearing." = "Angle (in degrees) between two lines, below which we merge them into a single straight line. Increasing this value (~1-5) can help when using a cutter, as it reduces the frequency of corrective swivels being made that could cause tearing."
+
+[context."New Project"]
+"_New" = "_New"
+
+[context."Number of Passes Tooltip"]
+"How many times the tool should pass over the same area. Multiple passes can be used to cut/draw deeper or darker, or to improve quality by going over the same path multiple times." = "How many times the tool should pass over the same area. Multiple passes can be used to cut/draw deeper or darker, or to improve quality by going over the same path multiple times."
+
+[context."Optimise Drawing Paths Tooltip"]
+"Optimises the order in which lines are drawn to minimise travel time." = "Optimises the order in which lines are drawn to minimise travel time."
+"Particularly useful for ordering lines when filling shapes." = "Particularly useful for ordering lines when filling shapes."
+
+[context."Outlines Before Fill Tooltip"]
+"Draws the outlines of shapes before filling them in." = "Draws the outlines of shapes before filling them in."
+"Usually you want to draw outlines after filling." = "Usually you want to draw outlines after filling."
+
+[context."Overcut Tooltip"]
+"Extends cuts by the specified amount to compensate for cutting moves ending slightly too early." = "Extends cuts by the specified amount to compensate for cutting moves ending slightly too early."
+"Recommended value ~1mm" = "Recommended value ~1mm"
+
+[context."Preview Tab"]
+"Preview" = "Preview"
+
+[context."Preview toolpath animation"]
+"Preview" = "Preview"
+
+[context."Printer Bed"]
+"Bed Dimensions" = "Bed Dimensions"
+
+[context."RegionDetection Tooltip"]
+"Black & White - Uses a single threshold to collapse the image into two tones. More useful for scanned paper." = "Black & White - Uses a single threshold to collapse the image into two tones. More useful for scanned paper."
+"Chooses the algorithm used to form regions before tracing." = "Chooses the algorithm used to form regions before tracing."
+"Colour Cluster - Groups pixels of similar colour together to determine boundaries" = "Colour Cluster - Groups pixels of similar colour together to determine boundaries"
+"Default = Colour Clustering" = "Default = Colour Clustering"
+"Watershed - uses a hierarchical algorithm to form content-adaptive regions that closely follow object shape." = "Watershed - uses a hierarchical algorithm to form content-adaptive regions that closely follow object shape."
+
+[context."SVG Path /Shape Details"]
+"Exclusions" = "Exclusions"
+"Nodes" = "Nodes"
+"Shapes" = "Shapes"
+
+[context."Shading Angle Tooltip"]
+"0° represents East, with positive values rotating counterclockwise." = "0° represents East, with positive values rotating counterclockwise."
+"Which Direction to draw when shading objects." = "Which Direction to draw when shading objects."
+
+[context."Shading Threshold Tooltip"]
+"How bright an object should be in order to be shaded. 0 = shade all objects, 1 = shade only fully bright objects." = "How bright an object should be in order to be shaded. 0 = shade all objects, 1 = shade only fully bright objects."
+"Range = 0 to 1" = "Range = 0 to 1"
+
+[context."Stacking Mode Tooltip"]
+" NOTE: " = " NOTE: "
+" Tracing mode = spline." = " Tracing mode = spline."
+"Controls how the detected regions are layered on top of one another." = "Controls how the detected regions are layered on top of one another."
+"Cutout - " = "Cutout - "
+"Cutout V2 - " = "Cutout V2 - "
+"Cutout will cause a ripple/oscillating effect visible along edges. This is a VTracer bug for now. If the ripples are too obvious, correct them with Path Simplification or use the Stacked option instead. " = "Cutout will cause a ripple/oscillating effect visible along edges. This is a VTracer bug for now. If the ripples are too obvious, correct them with Path Simplification or use the Stacked option instead. "
+"Layers each region as a separate overlapping shape, like sheets of coloured paper. Can provide the cleanest edges to shapes, but can require a lot more cleanup effort after import." = "Layers each region as a separate overlapping shape, like sheets of coloured paper. Can provide the cleanest edges to shapes, but can require a lot more cleanup effort after import."
+"Produces a true seam-free mosaic, avoiding overlaps or visible seams between regions." = "Produces a true seam-free mosaic, avoiding overlaps or visible seams between regions."
+"Same as Cutout, but with my own attempt at fixing the ripple/oscillating effect in VTracer. Only works with" = "Same as Cutout, but with my own attempt at fixing the ripple/oscillating effect in VTracer. Only works with"
+"Stacked - " = "Stacked - "
+"Stacking (Default = Cutout)" = "Stacking (Default = Cutout)"
+
+[context."Tool Diameter Tooltip"]
+"Most blades are ~1mm in diameter, however the point of the blade may not be at the very edge." = "Most blades are ~1mm in diameter, however the point of the blade may not be at the very edge."
+"Setting the tool diameter correctly adds a compensatory swivel for blade rotation to align with the next move. This is most noticeable on tiny features." = "Setting the tool diameter correctly adds a compensatory swivel for blade rotation to align with the next move. This is most noticeable on tiny features."
+"of the swivelling part of the cutting blade." = "of the swivelling part of the cutting blade."
+
+[context."Tool Mode"]
+"Cut" = "Cut"
+"Draw" = "Draw"
+
+[context."Tool Mode Tooltip"]
+"Settings designed for cutting objects out using a drag-knife." = "Settings designed for cutting objects out using a drag-knife."
+"Settings designed for drawing using a pen, marker, or even a foil stamping pen." = "Settings designed for drawing using a pen, marker, or even a foil stamping pen."
+
+[context."Tool Offsets Tooltip"]
+"Installation offset of the cutting tool on the X axis. This is added on top of the Toolhead Offset." = "Installation offset of the cutting tool on the X axis. This is added on top of the Toolhead Offset."
+"Installation offset of the cutting tool on the Y axis. This is added on top of the Toolhead Offset." = "Installation offset of the cutting tool on the Y axis. This is added on top of the Toolhead Offset."
+"Installation offset of the drawing tool on the X axis. This is added on top of the Toolhead Offset." = "Installation offset of the drawing tool on the X axis. This is added on top of the Toolhead Offset."
+"Installation offset of the drawing tool on the Y axis. This is added on top of the Toolhead Offset." = "Installation offset of the drawing tool on the Y axis. This is added on top of the Toolhead Offset."
+
+[context."Tool Speed Tooltip"]
+"Slower is usually better" = "Slower is usually better"
+"Speed of the toolhead when the tool is down and cutting/drawing." = "Speed of the toolhead when the tool is down and cutting/drawing."
+
+[context."TracingMode Tooltip"]
+"Fits edges using smooth curves for organic outlines." = "Fits edges using smooth curves for organic outlines."
+"Keeps hard, blocky pixel-edge outlines with no curve fitting. Great for pixel art" = "Keeps hard, blocky pixel-edge outlines with no curve fitting. Great for pixel art"
+"Pixel - " = "Pixel - "
+"Polygon - " = "Polygon - "
+"Sets the curve-fitting style used to outline each region." = "Sets the curve-fitting style used to outline each region."
+"Spline - " = "Spline - "
+"Tracing Mode (Default = Spline)" = "Tracing Mode (Default = Spline)"
+"Uses straight line segments" = "Uses straight line segments"
+
+[context."Travel Speed ToolTip"]
+"Speed of the toolhead when the tool is raised and not actively cutting/drawing." = "Speed of the toolhead when the tool is raised and not actively cutting/drawing."
+
+[context."Z Height Tooltip"]
+"How high above the workpiece the toolhead should be positioned when travelling or drawing." = "How high above the workpiece the toolhead should be positioned when travelling or drawing."
+"Positive values are offset above the bed surface." = "Positive values are offset above the bed surface."
+"This value is affected by your printer's Z-Offset." = "This value is affected by your printer's Z-Offset."
+
+[context."Z Offset Per Pass Tooltip"]
+"For cutting or engraving thicker materials, a slightly negative value can be used to gradually cut deeper with each pass, which can improve quality and reduce the chance of blade breakage." = "For cutting or engraving thicker materials, a slightly negative value can be used to gradually cut deeper with each pass, which can improve quality and reduce the chance of blade breakage."
+"Positive values move the tool up after each pass, while negative values move the tool down after each pass." = "Positive values move the tool up after each pass, while negative values move the tool down after each pass."
+"The distance in Z that the tool should move after each pass when multiple passes are enabled." = "The distance in Z that the tool should move after each pass when multiple passes are enabled."

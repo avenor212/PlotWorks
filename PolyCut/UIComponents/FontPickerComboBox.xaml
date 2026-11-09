@@ -1,0 +1,89 @@
+<UserControl x:Class="FontPickerComboBox"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ComponentModel="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:PolyCut"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             x:Name="FPCRoot"
+             d:DataContext="{d:DesignInstance Type=local:SVGPageViewModel}"
+             d:DesignHeight="450"
+             d:DesignWidth="800"
+             mc:Ignorable="d">
+    <ComboBox x:Name="FontComboBox"
+              Background="Transparent"
+              ItemTemplate="{DynamicResource FontTemplate}"
+              ScrollViewer.VerticalScrollBarVisibility="Visible"
+              SelectedItem="{Binding SelectedFont, ElementName=FPCRoot, Mode=TwoWay}">
+        <ComboBox.ItemsPanel>
+            <ItemsPanelTemplate>
+                <VirtualizingStackPanel IsVirtualizing="True" VirtualizationMode="Recycling" />
+            </ItemsPanelTemplate>
+        </ComboBox.ItemsPanel>
+        <ComboBox.Resources>
+
+            <local:FontNameConverter x:Key="FontNameConverter" />
+            <local:FontDisplayNameConverter x:Key="FontDisplayNameConverter" />
+
+            <Style BasedOn="{StaticResource DefaultComboBoxStyle}" TargetType="{x:Type ComboBox}">
+                <Setter Property="ScrollViewer.CanContentScroll" Value="True" />
+                <Setter Property="VirtualizingPanel.IsVirtualizing" Value="True" />
+                <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling" />
+            </Style>
+
+            <CollectionViewSource x:Key="myFonts" Source="{Binding Source={x:Static Fonts.SystemFontFamilies}}">
+                <CollectionViewSource.SortDescriptions>
+                    <ComponentModel:SortDescription PropertyName="Source" />
+                </CollectionViewSource.SortDescriptions>
+            </CollectionViewSource>
+
+            <Style x:Key="FontStyle">
+                <Setter Property="Control.FontFamily" Value="{Binding Source}" />
+                <Setter Property="Control.FontSize" Value="123" />
+            </Style>
+            <Style x:Key="FontStyle2">
+                <Setter Property="Control.FontFamily" Value="Segoe UI" />
+                <Setter Property="Control.FontSize" Value="13" />
+            </Style>
+
+            <DataTemplate x:Key="FontTemplate">
+                <StackPanel Orientation="Horizontal">
+                    <Grid Width="300" Height="16" VerticalAlignment="Center">
+                        <Grid.ToolTip>
+                            <ToolTip MaxWidth="400">
+                                <StackPanel>
+                                    <TextBlock FontSize="15" Style="{StaticResource FontStyle}" Text="The Quick Brown Fox Jumps Over The Lazy Dog." />
+                                    <TextBlock FontSize="15" Style="{StaticResource FontStyle}" Text="1234567890 !@#$%^&amp;*()-+[]{};:'/?" />
+                                </StackPanel>
+                            </ToolTip>
+
+                        </Grid.ToolTip>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="200" />
+                            <ColumnDefinition Width="10" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0"
+                                   Width="150"
+                                   Margin="0 0 10 0" HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                                   Style="{StaticResource FontStyle2}"
+                                   Text="{Binding Source, Converter={StaticResource FontDisplayNameConverter}}"
+                                   TextTrimming="CharacterEllipsis" />
+                        <Viewbox Grid.Column="2"
+                                 Height="22"
+                                 HorizontalAlignment="Right" VerticalAlignment="Center"
+                                 Stretch="Uniform" StretchDirection="DownOnly">
+                            <TextBlock Width="700"
+                                       VerticalAlignment="Center"
+                                       Style="{StaticResource FontStyle}"
+                                       Text="{Binding Source, Converter={StaticResource FontNameConverter}}"
+                                       TextAlignment="Right" TextTrimming="None" />
+                        </Viewbox>
+                    </Grid>
+                </StackPanel>
+            </DataTemplate>
+
+        </ComboBox.Resources>
+
+    </ComboBox>
+</UserControl>

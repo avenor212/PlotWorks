@@ -1,0 +1,372 @@
+﻿Imports System.Numerics
+Imports System.Runtime.CompilerServices
+Imports System.Windows
+Imports System.Windows.Media
+Imports System.Windows.Shapes
+
+
+Public Structure GeoLine
+
+    Public ReadOnly Property StartPoint As Vector2
+    Public ReadOnly Property EndPoint As Vector2
+
+    ' ---- Existing property names kept (now ReadOnly) ----
+    Public ReadOnly Property X1 As Single
+        Get
+            Return StartPoint.X
+        End Get
+    End Property
+
+    Public ReadOnly Property Y1 As Single
+        Get
+            Return StartPoint.Y
+        End Get
+    End Property
+
+    Public ReadOnly Property X2 As Single
+        Get
+            Return EndPoint.X
+        End Get
+    End Property
+
+    Public ReadOnly Property Y2 As Single
+        Get
+            Return EndPoint.Y
+        End Get
+    End Property
+
+    Public ReadOnly Property XLength As Double
+        Get
+            Return X2 - X1
+        End Get
+    End Property
+
+    Public ReadOnly Property YLength As Double
+        Get
+            Return Y2 - Y1
+        End Get
+    End Property
+
+    Public ReadOnly Property Length As Double
+        Get
+            Return Vector2.Distance(StartPoint, EndPoint)
+        End Get
+    End Property
+
+    Public ReadOnly Property Slope As Double
+        Get
+            Return YLength / XLength
+        End Get
+    End Property
+
+    Public ReadOnly Property MidPoint As Vector2
+        Get
+            Return New Vector2((StartPoint.X + EndPoint.X) / 2.0F, (StartPoint.Y + EndPoint.Y) / 2.0F)
+        End Get
+    End Property
+
+    Public ReadOnly Property AngleR As Double
+        Get
+            Return Math.Atan2(YLength, XLength)
+        End Get
+    End Property
+
+
+    ' ---- Constructors ----
+    Public Sub New(startP As Vector2, endP As Vector2)
+        StartPoint = startP
+        EndPoint = endP
+    End Sub
+
+    Public Sub New(X1 As Single, Y1 As Single, X2 As Single, Y2 As Single)
+        StartPoint = New Vector2(X1, Y1)
+        EndPoint = New Vector2(X2, Y2)
+    End Sub
+
+    Public Sub New(startP As Vector2, length As Double, angleR As Double)
+        StartPoint = startP
+        EndPoint = New Vector2(startP.X + length * Math.Cos(angleR), startP.Y + length * Math.Sin(angleR))
+    End Sub
+
+
+    ' ---- Fluent Builders ----
+    Public Function WithStartPoint(p As Vector2) As GeoLine
+        Return New GeoLine(p, EndPoint)
+    End Function
+
+    Public Function WithEndPoint(p As Vector2) As GeoLine
+        Return New GeoLine(StartPoint, p)
+    End Function
+
+    Public Function WithX1(value As Single) As GeoLine
+        Return New GeoLine(New Vector2(value, StartPoint.Y), EndPoint)
+    End Function
+
+    Public Function WithY1(value As Single) As GeoLine
+        Return New GeoLine(New Vector2(StartPoint.X, value), EndPoint)
+    End Function
+
+    Public Function WithX2(value As Single) As GeoLine
+        Return New GeoLine(StartPoint, New Vector2(value, EndPoint.Y))
+    End Function
+
+    Public Function WithY2(value As Single) As GeoLine
+        Return New GeoLine(StartPoint, New Vector2(EndPoint.X, value))
+    End Function
+
+    Public Function Reverse() As GeoLine
+        Return New GeoLine(EndPoint, StartPoint)
+    End Function
+
+
+    ' ---- Methods ----
+    Public Function GetAngleBetween(line2 As GeoLine) As Double
+
+        Dim hypot As GeoLine = StartPoint.LineTo(line2.EndPoint)
+        Dim lenA As Double = Me.Length
+        Dim lenb As Double = line2.Length
+        Dim lenC As Double = hypot.Length
+        Return Math.Acos((lenA ^ 2 + lenb ^ 2 - lenC ^ 2) / (2 * lenA * lenb))
+
+    End Function
+
+
+    Public Function IsContinuousWith(otherline As GeoLine, Optional bidirectional As Boolean = False) As Boolean
+        If bidirectional Then
+            Return (X2 = otherline.X1 AndAlso Y2 = otherline.Y1) OrElse (X1 = otherline.X2 AndAlso Y1 = otherline.Y2)
+        Else
+            Return X2 = otherline.X1 AndAlso Y2 = otherline.Y1
+        End If
+    End Function
+
+    Public Function IsCollinearWith(other As GeoLine, Optional sinTol As Double = 0) As Boolean
+        Dim ax = Me.X2 - Me.X1
+        Dim ay = Me.Y2 - Me.Y1
+        Dim bx = other.X2 - other.X1
+        Dim by = other.Y2 - other.Y1
+
+        Dim aLen2 = ax * ax + ay * ay
+        Dim bLen2 = bx * bx + by * by
+        If aLen2 <= 0 OrElse bLen2 <= 0 Then Return True ' treat degenerate as collinear for gating
+
+        Dim cross = ax * by - ay * bx
+        Dim cross2 = cross * cross
+
+        ' cross^2 / (|a|^2|b|^2) <= sinTol^2
+        Return cross2 <= (sinTol * sinTol) * aLen2 * bLen2
+    End Function
+
+
+    Public Function GetIntersectionPointWith(line2 As GeoLine, Optional IncludeCoincidentIntersection As Boolean = False, Optional tolerance As Double = 0.000000001) As Nullable(Of Vector2)
+
+        Dim d1 As Vector2 = EndPoint - StartPoint                   ' Direction vector of the first line
+        Dim d2 As Vector2 = line2.EndPoint - line2.StartPoint       ' Direction vector of the second line
+        Dim delta As Vector2 = line2.StartPoint - StartPoint        ' Vector between the start points of the two lines
+
+
+        Dim denominator As Double = d1.X * d2.Y - d1.Y * d2.X       ' Calculate the cross product of the direction vectors
+        Dim numerator1 As Double = delta.X * d1.Y - delta.Y * d1.X  ' Calculate the cross product of the delta vector and the direction vector of the first line
+        Dim numerator2 As Double = delta.X * d2.Y - delta.Y * d2.X  ' Calculate the cross product of the delta vector and the direction vector of the second line
+
+
+        If Math.Abs(denominator) < tolerance Then                   ' Lines are parallel or coincident
+
+            Dim isApproxCoincident As Boolean = Math.Abs(numerator1) < tolerance AndAlso Math.Abs(numerator2) < tolerance
+            If IncludeCoincidentIntersection AndAlso isApproxCoincident Then Return StartPoint
+            Return Nothing
+
+        End If
+
+        Dim t = numerator2 / denominator
+        Dim u = numerator1 / denominator
+
+        If t < -tolerance OrElse t > 1 + tolerance OrElse u < -tolerance OrElse u > 1 + tolerance Then Return Nothing
+
+
+        Return StartPoint + t * d1                                  ' Calculate and return the intersection point
+
+    End Function
+
+
+    Public Function IsLineOnLine(line2 As GeoLine, tolerance As Double) As Boolean
+        Return StartPoint.IsPointOnLineG(line2, tolerance) AndAlso EndPoint.IsPointOnLineG(line2, tolerance)
+    End Function
+
+
+    Public Function IsLineOnAnyLine(lines As List(Of GeoLine), tolerance As Double) As Boolean
+        For Each l In lines
+            If IsLineOnLine(l, tolerance) Then
+                Return True
+            End If
+        Next
+        Return False
+    End Function
+
+
+    Public Function IntersectsWithShape(shapeBoundaries As List(Of GeoLine), Optional includeCoincidentPoints As Boolean = False, Optional tolerance As Double = 0.001) As Boolean
+        For Each segment In shapeBoundaries
+
+            Dim intersection = GetIntersectionPointWith(segment, includeCoincidentPoints, tolerance)
+            If intersection IsNot Nothing Then Return True
+
+            ' Check if the line starts or ends on the boundary
+            If includeCoincidentPoints AndAlso (StartPoint.IsPointOnLineG(segment, tolerance) OrElse EndPoint.IsPointOnLineG(segment, tolerance)) Then
+                Return True
+            End If
+        Next
+
+        Return False
+    End Function
+
+
+End Structure
+
+
+Partial Public Module GeoLineExtensions
+
+    <Extension>
+    Public Function IsPointOnLineG(point As Vector2, line As GeoLine, tolerance As Double) As Boolean
+        Dim dx As Double = line.X2 - line.X1
+        Dim dy As Double = line.Y2 - line.Y1
+        Dim len2 As Double = dx * dx + dy * dy
+        Dim tol2 As Double = tolerance * tolerance
+
+        If len2 <= 0.0000000001 Then
+            Dim px = point.X - line.X1
+            Dim py = point.Y - line.Y1
+            Return (px * px + py * py) <= tol2
+        End If
+
+        Dim cross As Double = (point.Y - line.Y1) * dx - (point.X - line.X1) * dy
+        If (cross * cross) > tol2 * len2 Then Return False
+
+        Dim dot As Double = (point.X - line.X1) * dx + (point.Y - line.Y1) * dy
+        If dot < 0 Then Return False
+        If dot > len2 Then Return False
+
+        Return True
+    End Function
+
+
+
+
+    <Extension>
+    Public Function LineTo(startPoint As Vector2, endPoint As Vector2) As GeoLine
+        Return New GeoLine(
+                X1:=startPoint.X,
+                Y1:=startPoint.Y,
+                X2:=endPoint.X,
+                Y2:=endPoint.Y
+            )
+    End Function
+
+
+    <Extension>
+    Public Function RaycastIntersectsWithShapeG(point As Vector2, shapeBoundaries As List(Of GeoLine), angle As Double, rayLength As Double) As Boolean
+        Dim endpoint As New Vector2(point.X + rayLength * Math.Cos(angle), point.Y + rayLength * Math.Sin(angle))
+        Dim startpoint As New Vector2(point.X - rayLength * Math.Cos(angle), point.Y - rayLength * Math.Sin(angle))
+
+        Dim intersectionPoints As New List(Of Vector2)
+        For Each line In shapeBoundaries
+            Dim intersection = startpoint.LineTo(endpoint).GetIntersectionPointWith(line)
+            If intersection IsNot Nothing Then
+                Return True
+            End If
+        Next
+
+        Return False
+    End Function
+
+    <Extension>
+    Public Function IsPointInsideShapeG(point As Vector2, shapeBoundaries As List(Of GeoLine), Optional angle As Double = 0, Optional rayLength As Double = 10000) As Boolean
+        ' Define the endpoint of the ray based on the given angle and length
+        Dim endpoint As New Vector2(point.X + rayLength * Math.Cos(angle), point.Y + rayLength * Math.Sin(angle))
+        Dim intersectionCount As Integer = 0
+
+        ' Loop through each boundary line of the shape
+        For Each line In shapeBoundaries
+            Dim intersection = New GeoLine(point, endpoint).GetIntersectionPointWith(line)
+
+            ' If there is an intersection, increment the count
+            If intersection IsNot Nothing Then intersectionCount += 1
+
+        Next
+
+        ' Return true if the intersection count is odd (inside), false if even (outside)
+        Return intersectionCount Mod 2 = 1
+    End Function
+
+
+    <Extension>
+    Public Function DistanceToG(point1 As Vector2, point2 As Vector2) As Double
+        Return Math.Sqrt((point1.X - point2.X) ^ 2 + (point1.Y - point2.Y) ^ 2)
+    End Function
+    <Extension>
+    Public Function DistanceToSquaredG(point1 As Vector2, point2 As Vector2) As Double
+        Dim dx As Double = point1.X - point2.X
+        Dim dy As Double = point1.Y - point2.Y
+        Return dx * dx + dy * dy
+    End Function
+
+
+    <Extension>
+    Public Function ToPoint(vec As Vector2) As Point
+        Return New Point(vec.X, vec.Y)
+    End Function
+
+
+
+    ' -------------------------
+    ' Get Bounds
+    ' -------------------------
+    Friend Function ComputeBounds(lines As List(Of GeoLine)) As Rect
+        If lines Is Nothing OrElse lines.Count = 0 Then Return New Rect(0, 0, 0, 0)
+
+        Dim minX = Double.PositiveInfinity
+        Dim minY = Double.PositiveInfinity
+        Dim maxX = Double.NegativeInfinity
+        Dim maxY = Double.NegativeInfinity
+
+        For Each ln In lines
+            Dim x1 = ln.X1, y1 = ln.Y1
+            Dim x2 = ln.X2, y2 = ln.Y2
+
+            minX = Math.Min(minX, Math.Min(x1, x2))
+            minY = Math.Min(minY, Math.Min(y1, y2))
+            maxX = Math.Max(maxX, Math.Max(x1, x2))
+            maxY = Math.Max(maxY, Math.Max(y1, y2))
+        Next
+
+        Return New Rect(minX, minY, maxX - minX, maxY - minY)
+    End Function
+    <Extension>
+    Public Function ComputeBounds(figures As List(Of List(Of GeoLine))) As Rect
+        Dim minX = Double.PositiveInfinity
+        Dim minY = Double.PositiveInfinity
+        Dim maxX = Double.NegativeInfinity
+        Dim maxY = Double.NegativeInfinity
+
+        If figures Is Nothing Then Return Rect.Empty
+
+        For Each fig In figures
+            If fig Is Nothing Then Continue For
+            For Each ln In fig
+                ' start
+                minX = Math.Min(minX, ln.X1)
+                minY = Math.Min(minY, ln.Y1)
+                maxX = Math.Max(maxX, ln.X1)
+                maxY = Math.Max(maxY, ln.Y1)
+
+                ' end
+                minX = Math.Min(minX, ln.X2)
+                minY = Math.Min(minY, ln.Y2)
+                maxX = Math.Max(maxX, ln.X2)
+                maxY = Math.Max(maxY, ln.Y2)
+            Next
+        Next
+
+        If Double.IsInfinity(minX) Then Return Rect.Empty
+        Return New Rect(minX, minY, Math.Max(0, maxX - minX), Math.Max(0, maxY - minY))
+    End Function
+
+End Module

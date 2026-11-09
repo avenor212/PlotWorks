@@ -1,0 +1,314 @@
+Imports System.IO
+Imports System.Linq
+
+Imports CommunityToolkit.Mvvm.ComponentModel
+Imports CommunityToolkit.Mvvm.Input
+
+Imports PolyCut.RichCanvas
+Imports PolyCut.Shared
+
+Partial Public Class SVGPageViewModel : Inherits ObservableObject
+
+    Public ReadOnly Property MainVM As MainViewModel
+    Public ReadOnly Property SelectionManager As SelectionManager
+    Public ReadOnly Property Document As Document
+    Public ReadOnly Property UIConfiguration As UIConfiguration
+    Private ReadOnly _undoRedoService As UndoRedoService
+
+    <ObservableProperty> Private _DrawingStroke As Brush = Brushes.Black
+    <ObservableProperty> Private _DrawingFill As Brush = Brushes.Transparent
+
+    <NotifyPropertyChangedFor(NameOf(CanvasToolModeIsText))>
+    <ObservableProperty> Private _CanvasToolMode As CanvasMode
+
+    <ObservableProperty> Private _CanvasFontWeightIsBold As Boolean
+    <ObservableProperty> Private _CanvasFontStyleIsItalic As Boolean
+    <ObservableProperty> Private _CanvasFontFamily As New FontFamily("Calibri")
+    <ObservableProperty> Private _CanvasTextAlignment As TextAlignment = TextAlignment.Left
+
+    Private Sub OnCanvasTextAlignmentChanged(value As TextAlignment)
+        If Not _syncingOverlayStyle Then CanvasTextBox.TextAlignment = value
+    End Sub
+
+    ''' <summary>Millimetres per typographic point. The canvas works in millimetres (one
+    ''' canvas unit is one millimetre, which is also what ends up in the G-code), while the
+    ''' size field speaks points like every other design tool.</summary>
+    Public Const MmPerPoint As Double = 25.4 / 72.0
+
+    Private _canvasFontSizeMm As Double = 14 * MmPerPoint
+
+    ''' <summary>Font size in POINTS for the UI. The canvas TextBox stores the same value
+    ''' in millimetres (fontSize * MmPerPoint).</summary>
+    Public Property CanvasFontSize As Double
+        Get
+            Return _canvasFontSizeMm / MmPerPoint
+        End Get
+        Set(value As Double)
+            Dim mm = If(Double.IsFinite(value) AndAlso value > 0, value * MmPerPoint, 14 * MmPerPoint)
+            If Math.Abs(mm - _canvasFontSizeMm) < 0.0001 Then Return
+
+            _canvasFontSizeMm = mm
+            OnPropertyChanged(NameOf(CanvasFontSize))
+
+            If Not _syncingOverlayStyle AndAlso CanvasTextBox IsNot Nothing Then
+                CanvasTextBox.FontSize = mm
+            End If
+        End Set
+    End Property
+
+    Private Sub OnCanvasToolModeChanged(value As CanvasMode)
+        If value <> CanvasMode.Selection Then
+            SelectionManager.ApplySelection(Nothing, Document.Drawables)
+            Document.NotifyChanged()
+        End If
+    End Sub
+
+    Private Sub OnCanvasFontWeightIsBoldChanged(value As Boolean)
+        If Not _syncingOverlayStyle Then CanvasTextBox.FontWeight = If(value, FontWeights.Bold, FontWeights.Normal)
+    End Sub
+
+    Private Sub OnCanvasFontStyleIsItalicChanged(value As Boolean)
+        If Not _syncingOverlayStyle Then CanvasTextBox.FontStyle = If(value, FontStyles.Italic, FontStyles.Normal)
+    End Sub
+
+    Public ReadOnly Property CanvasToolModeIsText As Boolean
+        Get
+            Return CanvasToolMode = CanvasMode.Text
+        End Get
+    End Property
+
+    Private Sub OnCanvasFontFamilyChanged(value As FontFamily)
+        If Not _syncingOverlayStyle Then CanvasTextBox.FontFamily = value
+    End Sub
+
+    Private Sub OnCanvasFontSizeChanged(value As Double)
+        ' Superseded by the point/millimetre aware CanvasFontSize property above.
+    End Sub
+
+
+    ' ===== Overlay style synchronisation =====
+    ' While _syncingOverlayStyle is True the font setters only update the overlay display
+    ' (and raise PropertyChanged) - they do NOT propagate to CanvasTextBox, which is the
+    ' live style source for the active text-edit session. This keeps a programmatic overlay
+    ' sync from ever changing the textbox currently being edited.
+    Private _syncingOverlayStyle As Boolean
+
+    Public Sub BeginOverlaySync()
+        _syncingOverlayStyle = True
+    End Sub
+
+    Public Sub EndOverlaySync()
+        _syncingOverlayStyle = False
+    End Sub
+
+    Public Property CanvasTextBox As TextBox = New TextBox With {.FontFamily = New FontFamily("Calibri"), .FontSize = 14 * MmPerPoint}
+
+    Public Property PreviewKeyDownCommand As ICommand = New RelayCommand(Of String)(Sub(key) ShortcutKeyHandler(key))
+    Public Property MirrorHorizontallyCommand As ICommand = New RelayCommand(Sub() MirrorSelection(True, False))
+    Public Property MirrorVerticallyCommand As ICommand = New RelayCommand(Sub() MirrorSelection(False, True))
+    Public Property DeleteDrawableElementCommand As ICommand = New RelayCommand(Sub() DeleteSelectedDrawableElement())
+
+
+    Private Sub DeleteSelectedDrawableElement()
+        MainVM.RemoveSelectedDrawables()
+    End Sub
+
+
+    Private Sub MirrorSelection(mirrorX As Boolean, mirrorY As Boolean)
+        Dim selectedItems = SelectionManager.SelectedItems.ToList()
+        If selectedItems.Count = 0 Then Return
+
+        Dim selectionCenter = CalculateSelectionCenter(selectedItems)
+        Dim snapshots = New List(Of (Target As IDrawable, Before As Object, After As Object))
+
+        For Each selected In selectedItems
+            If selected?.DrawableElement Is Nothing Then Continue For
+            Dim wrapper = TryCast(selected.DrawableElement.Parent, ContentControl)
+            If wrapper Is Nothing Then Continue For
+
+            Dim beforeSnapshot = TransformAction.CaptureState(wrapper)
+            TransformAction.ApplyMirror(wrapper, selectionCenter, mirrorX, mirrorY)
+            Dim afterSnapshot = TransformAction.CaptureState(wrapper)
+
+            If beforeSnapshot IsNot Nothing AndAlso afterSnapshot IsNot Nothing Then
+                snapshots.Add((selected, CType(beforeSnapshot, Object), CType(afterSnapshot, Object)))
+            End If
+        Next
+
+        PublishTransformMessage(snapshots)
+    End Sub
+
+    Private Function CalculateSelectionCenter(selectedItems As List(Of IDrawable)) As Point
+        Dim minX As Double = Double.MaxValue
+        Dim minY As Double = Double.MaxValue
+        Dim maxX As Double = Double.MinValue
+        Dim maxY As Double = Double.MinValue
+        Dim found As Boolean = False
+
+        For Each selected In selectedItems
+            If selected?.DrawableElement Is Nothing Then Continue For
+            Dim wrapper = TryCast(selected.DrawableElement.Parent, ContentControl)
+            If wrapper Is Nothing Then Continue For
+
+            Dim b = TransformMath.GetWorldBounds(wrapper)
+            If b.IsEmpty Then Continue For
+
+            minX = Math.Min(minX, b.Left)
+            minY = Math.Min(minY, b.Top)
+            maxX = Math.Max(maxX, b.Right)
+            maxY = Math.Max(maxY, b.Bottom)
+            found = True
+        Next
+
+        If Not found Then Return New Point(0, 0)
+        Return New Point((minX + maxX) / 2, (minY + maxY) / 2)
+    End Function
+
+    Private Sub PublishTransformMessage(snapshots As List(Of (Target As IDrawable, Before As Object, After As Object)))
+        If snapshots.Count = 0 Then Return
+
+        Try
+            Dim msg As New TransformCompletedMessage With {.Items = snapshots}
+            EventAggregator.Publish(Of TransformCompletedMessage)(msg)
+        Catch ex As Exception
+            Debug.WriteLine($"MirrorSelection publish failed: {ex.Message}")
+        End Try
+    End Sub
+
+    Public Sub New(mainvm As MainViewModel, undoRedoService As UndoRedoService, selectionManager As SelectionManager, document As Document, uiConfiguration As UIConfiguration)
+        Me.MainVM = mainvm
+        Me.SelectionManager = selectionManager
+        Me.Document = document
+        Me.UIConfiguration = uiConfiguration
+        Me._undoRedoService = undoRedoService
+        AddHandler uiConfiguration.GridConfig.PropertyChanged, AddressOf UpdateGridDefinition
+        UpdateGridDefinition()
+
+    End Sub
+
+    Private Sub ShortcutKeyHandler(Key As String)
+        If (Key = "]") AndAlso Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) Then
+            Dim selectedItem = SelectionManager.SelectedItems?.FirstOrDefault()
+            If selectedItem Is Nothing Then Return
+
+            Dim wrapper = TryCast(selectedItem.DrawableElement?.Parent, ContentControl)
+            If wrapper Is Nothing Then Return
+
+            Dim textbox As TextBox = TryCast(wrapper.Content, TextBox)
+            If textbox Is Nothing Then Return
+
+            TextGeometryHelper.SetEffectiveFontSize(textbox, TextGeometryHelper.GetEffectiveFontSize(textbox) + 1)
+
+
+        ElseIf (Key = "[") AndAlso Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) Then
+            Dim selectedItem = SelectionManager.SelectedItems?.FirstOrDefault()
+            If selectedItem Is Nothing Then Return
+
+            Dim wrapper = TryCast(selectedItem.DrawableElement?.Parent, ContentControl)
+            If wrapper Is Nothing Then Return
+
+            Dim textbox As TextBox = TryCast(wrapper.Content, TextBox)
+            If textbox Is Nothing Then Return
+
+            Dim size = TextGeometryHelper.GetEffectiveFontSize(textbox)
+            If size > 1 Then
+                TextGeometryHelper.SetEffectiveFontSize(textbox, Math.Max(1, size - 1))
+            End If
+        End If
+
+    End Sub
+
+
+
+    Public Sub ProcessDroppedFiles(files() As String, Optional dropPosition As Point? = Nothing)
+
+        MainVM.DragSVGs(files, dropPosition)
+
+    End Sub
+
+
+    ' -----------------
+    ' Style / Formatting
+    ' -----------------
+    <RelayCommand>
+    Private Sub ApplyFill(b As Brush)
+        ApplyFill(b, Nothing)
+    End Sub
+
+    Public Sub ApplyFill(b As Brush, previousFillOverrides As System.Collections.Generic.IDictionary(Of IDrawable, Brush))
+        If b Is Nothing Then Return
+        ApplyStyle(b, Nothing, Nothing, previousFillOverrides, Nothing, Nothing)
+    End Sub
+
+    <RelayCommand>
+    Private Sub ApplyStroke(b As Brush)
+        ApplyStroke(b, Nothing)
+    End Sub
+
+    Public Sub ApplyStroke(b As Brush, previousStrokeOverrides As System.Collections.Generic.IDictionary(Of IDrawable, Brush))
+        If b Is Nothing Then Return
+        ApplyStyle(Nothing, b, Nothing, Nothing, previousStrokeOverrides, Nothing)
+    End Sub
+
+    <RelayCommand>
+    Public Sub ApplyStrokeThickness(th As Double)
+        ApplyStrokeThickness(th, Nothing)
+    End Sub
+
+    Public Sub ApplyStrokeThickness(th As Double, previousThicknessOverrides As System.Collections.Generic.IDictionary(Of IDrawable, Double))
+        If Double.IsNaN(th) Then Return
+        ApplyStyle(Nothing, Nothing, th, Nothing, Nothing, previousThicknessOverrides)
+    End Sub
+
+    Private Sub ApplyStyle(fill As Brush,
+                       stroke As Brush,
+                       thickness As Double?,
+                       previousFill As IDictionary(Of IDrawable, Brush),
+                       previousStroke As IDictionary(Of IDrawable, Brush),
+                       previousThickness As IDictionary(Of IDrawable, Double))
+
+        Dim raw = SelectionManager.SelectedItems.ToList()
+        If raw.Count < 1 Then Return
+
+        Dim items As New List(Of IDrawable)()
+        For Each d In raw
+            Dim ng = TryCast(d, NestedDrawableGroup)
+            If ng IsNot Nothing Then
+                items.AddRange(ng.GetAllLeafChildren())
+            Else
+                items.Add(d)
+            End If
+        Next
+        items = items.Where(Function(x) x IsNot Nothing).Distinct().ToList()
+
+        'Don't apply style to registration marks.
+        If fill IsNot Nothing Then
+            items = items.Where(Function(x) Not RegistrationMarkHelper.IsRegistrationMark(x)).ToList()
+        End If
+
+        If items.Count = 0 Then Return
+
+        Dim action As New StyleAction(Document, items, fill, stroke, thickness, previousThickness, previousFill, previousStroke)
+        If action.Execute() Then _undoRedoService.Push(action)
+    End Sub
+
+    Public Sub RecordTextEdit(textBox As TextBox, before As TextEditState, after As TextEditState)
+        Dim action As New TextEditAction(textBox, before, after)
+        If action.Execute() Then _undoRedoService.Push(action)
+    End Sub
+
+
+
+
+    Private Sub UpdateGridDefinition()
+        Dim grid = UIConfiguration.GridConfig
+        PolyCanvas.UpdateGridDefinition(New GridDefinition With {
+            .Spacing = grid.Spacing,
+            .InsetLeft = grid.InsetLeft,
+            .InsetTop = grid.InsetTop,
+            .InsetRight = grid.InsetRight,
+            .InsetBottom = grid.InsetBottom
+        })
+    End Sub
+
+End Class

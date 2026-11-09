@@ -1,0 +1,330 @@
+Imports System.ComponentModel
+
+Imports PolyCut.RichCanvas
+
+Imports PolyCut.Shared
+
+Public Class Tab_ElementProperties
+
+    Private ReadOnly _selectionManager As SelectionManager
+
+    ' ===== Cached state for undo =====
+    Private _fillBeforeEditMap As Dictionary(Of IDrawable, Brush)
+    Private _strokeBeforeEditMap As Dictionary(Of IDrawable, Brush)
+    Private _thicknessBeforeEditMap As Dictionary(Of IDrawable, Double)
+
+
+    Private ReadOnly _thicknessValues As Double() = {0, 0.01, 0.1, 0.2, 0.5, 1, 2, 3, 4, 5, 10}
+
+    ' Guards
+    Private _updatingSlider As Boolean
+    Private _suppressThicknessHandler As Boolean
+
+    ' Track currently-selected drawable for change notifications
+    Private _currentDrawable As BaseDrawable
+    Private _subscribedDrawables As New List(Of BaseDrawable)()
+
+
+
+    Public Sub New()
+        _selectionManager = Application.GetService(Of SelectionManager)()
+        InitializeComponent()
+        AddHandler _selectionManager.SelectionChanged, AddressOf OnSelectionChanged
+        UpdateSelectedDrawablesSubscriptions()
+        UpdateSliderFromThickness()
+    End Sub
+
+
+    Private ReadOnly Property VM As SVGPageViewModel
+        Get
+            Return CType(DataContext, SVGPageViewModel)
+        End Get
+    End Property
+
+    Private Sub OnSelectionChanged(sender As Object, e As EventArgs)
+        UpdateSelectedDrawablesSubscriptions()
+        UpdateSliderFromThickness()
+    End Sub
+
+    Private Sub UpdateSelectedDrawablesSubscriptions()
+
+        For Each bd In _subscribedDrawables
+            Try
+                RemoveHandler bd.PropertyChanged, AddressOf OnDrawablePropertyChanged
+            Catch
+            End Try
+        Next
+        _subscribedDrawables.Clear()
+
+        For Each d In _selectionManager.SelectedItems.OfType(Of BaseDrawable)()
+            AddHandler d.PropertyChanged, AddressOf OnDrawablePropertyChanged
+            _subscribedDrawables.Add(d)
+        Next
+
+        UpdateFillPickerState()
+
+    End Sub
+
+    Private Sub UpdateFillPickerState()
+        Dim selected = _selectionManager.SelectedItems?.ToList()
+        If selected Is Nothing OrElse selected.Count = 0 Then Return
+
+        ' Only lock the picker when every selected item is a registration mark, with a mixed selection we can still fill the normal shapes.
+        FillColorPicker.IsEnabled = Not selected.All(Function(d) RegistrationMarkHelper.IsRegistrationMark(d))
+    End Sub
+
+    ' ===== Fill =====
+
+    Private Sub FillColorPicker_PopupOpening(sender As Object, e As EventArgs)
+        Dim leaves = ExpandSelectionToLeaves(_selectionManager.SelectedItems)
+        _fillBeforeEditMap = leaves.ToDictionary(Function(d) d, Function(d) d.Fill)
+    End Sub
+
+    Private Sub FillColorPicker_ColorSelected(sender As Object, e As ColorSelectedEventArgs)
+        VM.ApplyFill(e.SelectedBrush, _fillBeforeEditMap)
+        _fillBeforeEditMap = Nothing
+    End Sub
+
+
+    ' ===== Stroke =====
+
+    Private Sub StrokeColorPicker_PopupOpening(sender As Object, e As EventArgs)
+        Dim leaves = ExpandSelectionToLeaves(_selectionManager.SelectedItems)
+        _strokeBeforeEditMap = leaves.ToDictionary(Function(d) d, Function(d) d.Stroke)
+    End Sub
+
+    Private Sub StrokeColorPicker_ColorSelected(sender As Object, e As ColorSelectedEventArgs)
+        VM.ApplyStroke(e.SelectedBrush, _strokeBeforeEditMap)
+        _strokeBeforeEditMap = Nothing
+    End Sub
+
+
+    ' ===== Thickness =====
+
+    Private Sub ThicknessSlider_ValueChanged(sender As Object, e As RoutedPropertyChangedEventArgs(Of Double)
+    )
+        If _updatingSlider Then Return
+
+        Dim index = CInt(Math.Round(ThicknessSlider.Value))
+        If index < 0 OrElse index >= _thicknessValues.Length Then Return
+
+        Dim newThickness = _thicknessValues(index)
+        ThicknessSlider.Tag = newThickness.ToString()
+
+        Dim sd = _selectionManager.FirstSelectedItem
+        If sd Is Nothing Then Return
+
+        If _thicknessBeforeEditMap Is Nothing Then
+            Dim leaves = ExpandSelectionToLeaves(_selectionManager.SelectedItems)
+            _thicknessBeforeEditMap = leaves.ToDictionary(Function(d) d, Function(d) d.StrokeThickness)
+        End If
+
+
+        For Each d In _selectionManager.SelectedItems.ToList()
+            If Math.Abs(d.StrokeThickness - newThickness) > 0.001 Then
+                d.StrokeThickness = newThickness
+            End If
+        Next
+    End Sub
+
+    ' ===== Sync slider from selected drawable =====
+
+    Private Sub UpdateSliderFromThickness()
+
+        _currentDrawable = TryCast(_selectionManager.FirstSelectedItem, BaseDrawable)
+
+        If _currentDrawable Is Nothing Then Return
+
+        _updatingSlider = True
+
+        Try
+            Dim thickness = _currentDrawable.StrokeThickness
+            Dim closestIndex = 0
+            Dim minDiff = Double.MaxValue
+
+            For i = 0 To _thicknessValues.Length - 1
+                Dim diff = Math.Abs(_thicknessValues(i) - thickness)
+                If diff < minDiff Then
+                    minDiff = diff
+                    closestIndex = i
+                End If
+            Next
+
+            ThicknessSlider.Value = closestIndex
+            ThicknessSlider.Tag = _thicknessValues(closestIndex).ToString()
+        Finally
+            _updatingSlider = False
+        End Try
+    End Sub
+
+    Private Sub OnDrawablePropertyChanged(sender As Object, e As PropertyChangedEventArgs)
+        If e.PropertyName = NameOf(BaseDrawable.StrokeThickness) Then
+            UpdateSliderFromThickness()
+        End If
+    End Sub
+
+    ' ===== Commit thickness change to undo stack =====
+
+    Private Sub ThicknessSlider_PreviewMouseUp(sender As Object, e As MouseButtonEventArgs) Handles ThicknessSlider.PreviewMouseUp
+        CommitThicknessUndo()
+    End Sub
+
+    Private Sub ThicknessSlider_PreviewKeyUp(sender As Object, e As KeyEventArgs) Handles ThicknessSlider.PreviewKeyUp
+        If e.Key = Key.Left OrElse e.Key = Key.Right OrElse e.Key = Key.Up OrElse e.Key = Key.Down Then
+            CommitThicknessUndo()
+        End If
+    End Sub
+
+    Private Sub CommitThicknessUndo()
+        If _thicknessBeforeEditMap Is Nothing Then Return
+
+        Dim index = CInt(Math.Round(ThicknessSlider.Value))
+        If index < 0 OrElse index >= _thicknessValues.Length Then Return
+
+        Dim newThickness = _thicknessValues(index)
+
+        Dim changed As Boolean = False
+        For Each kv In _thicknessBeforeEditMap
+            If Math.Abs(kv.Value - newThickness) > 0.001 Then
+                changed = True
+                Exit For
+            End If
+        Next
+
+        If changed Then
+            VM.ApplyStrokeThickness(newThickness, _thicknessBeforeEditMap)
+        End If
+
+        _thicknessBeforeEditMap = Nothing
+    End Sub
+
+
+    Private Sub NumberBox_LostFocus(sender As Object, e As Wpf.Ui.Controls.NumberBoxValueChangedEventArgs)
+        Dim numberBox = TryCast(sender, Wpf.Ui.Controls.NumberBox)
+        If numberBox Is Nothing OrElse _before Is Nothing Then Return
+
+        Dim center = New Point(_before.Translation.X + _before.Width / 2, _before.Translation.Y + _before.Height / 2)
+        Dim startRotation As Double = _before.Rotation
+
+        Dim newRotation As Double = (If(numberBox.Value, 0) - startRotation) Mod 360
+
+        If Math.Abs(newRotation - startRotation) < 0.01 Then
+            _before = Nothing
+            Return
+        End If
+
+        TransformAction.ApplyRotation(_selectionManager.SelectedWrapper, center, startRotation, newRotation, New Point(_before.Translation.X, _before.Translation.Y))
+        _selectionManager.SelectedWrapper.UpdateLayout()
+
+        _after = TransformAction.CaptureState(_selectionManager.SelectedWrapper)
+
+        Dim items As New List(Of (IDrawable, Object, Object)) From {
+            (_selectionManager.FirstSelectedItem, _before, _after)
+        }
+        EventAggregator.Publish(Of TransformCompletedMessage)(
+                New TransformCompletedMessage With {.Items = items}
+            )
+
+        _before = Nothing
+        _after = Nothing
+    End Sub
+
+
+
+    Private _before As TransformState
+    Private _after As TransformState
+
+
+    Private Sub TextBox_GotKeyboardFocus(sender As Object, e As KeyboardFocusChangedEventArgs)
+
+        _before = TransformAction.CaptureState(_selectionManager.SelectedWrapper)
+
+
+        Dim tb = TryCast(sender, Wpf.Ui.Controls.TextBox)
+        If tb Is Nothing Then
+            Dim nb = TryCast(sender, Wpf.Ui.Controls.NumberBox)
+            If nb IsNot Nothing Then
+                nb.Value = nb.Value Mod 360
+            End If
+
+            Return
+        End If
+        tb.SelectAll()
+        e.Handled = True
+    End Sub
+
+
+
+    Private ReadOnly _mmConv As New InputToMillimetresConverter()
+
+    ''' <summary>Enter commits a typed value just like tabbing away does. Typing 148 and
+    ''' pressing Enter used to leave the canvas untouched, which looks like a broken field.</summary>
+    Private Sub NumberTextBox_KeyDown(sender As Object, e As System.Windows.Input.KeyEventArgs)
+        If e.Key <> System.Windows.Input.Key.Enter Then Return
+        e.Handled = True
+
+        Dim tb = TryCast(sender, Wpf.Ui.Controls.TextBox)
+        If tb Is Nothing Then Return
+
+        TextBox_LostFocus(tb, New RoutedEventArgs())
+    End Sub
+
+    Private Sub TextBox_LostFocus(sender As Object, e As RoutedEventArgs)
+
+        If _selectionManager.SelectedWrapper Is Nothing OrElse _selectionManager.FirstSelectedItem Is Nothing Then Return
+        If _before Is Nothing Then Return
+
+        CommitTextBox(CType(sender, Wpf.Ui.Controls.TextBox))
+
+
+
+        TransformAction.SetSizeAndPosition(_selectionManager.SelectedWrapper, _selectionManager.SelectedWrapper.Width,
+        _selectionManager.SelectedWrapper.Height,
+        Canvas.GetLeft(_selectionManager.SelectedWrapper),
+        Canvas.GetTop(_selectionManager.SelectedWrapper))
+
+        _selectionManager.SelectedWrapper.UpdateLayout()
+        _after = TransformAction.CaptureState(_selectionManager.SelectedWrapper)
+
+        Dim items As New List(Of (IDrawable, Object, Object)) From {
+        (_selectionManager.FirstSelectedItem, _before, _after)
+    }
+
+        EventAggregator.Publish(Of TransformCompletedMessage)(
+                New TransformCompletedMessage With {.Items = items}
+            )
+
+        _before = Nothing
+        _after = Nothing
+    End Sub
+
+
+    Private Function CommitTextBox(tb As WPF.Ui.Controls.TextBox) As Boolean
+        Dim be = tb.GetBindingExpression(WPF.Ui.Controls.TextBox.TextProperty)
+        If be Is Nothing Then Return True
+        be.UpdateSource()
+        Return Not Validation.GetHasError(tb)
+    End Function
+
+
+    Private Shared Function ExpandSelectionToLeaves(items As IEnumerable(Of IDrawable)) As List(Of IDrawable)
+        Dim result As New List(Of IDrawable)()
+        If items Is Nothing Then Return result
+
+        For Each d In items
+            If d Is Nothing Then Continue For
+
+            Dim ng = TryCast(d, NestedDrawableGroup)
+            If ng IsNot Nothing Then
+                ' Perfect undo requires leaf-level snapshots
+                result.AddRange(ng.GetAllLeafChildren())
+            Else
+                result.Add(d)
+            End If
+        Next
+
+        Return result.Where(Function(x) x IsNot Nothing).Distinct().ToList()
+    End Function
+
+
+End Class
