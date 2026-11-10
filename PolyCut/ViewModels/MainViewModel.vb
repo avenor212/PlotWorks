@@ -909,6 +909,13 @@ Partial Public Class MainViewModel : Inherits ObservableObject
                 Return
             End If
 
+            ' A1 的 Z=0 就是床面，负的落笔高度意味着刀尖/笔尖要穿过床板。
+            ' 默认值已经是 5 mm，这里挡的是用户手改或旧项目带过来的负数。
+            If Configuration.WorkZ < 0 Then
+                _snackbarService.GenerateError("无法生成 G-code", $"工作 Z 高度是 {Configuration.WorkZ} mm，笔尖会落到床面以下。请到工具配置面板改成安全的正值")
+                Return
+            End If
+
             If Configuration.PassHeightDelta < -10 Then
                 _snackbarService.GenerateError("无法生成 G-code", $"每次走刀 Z 偏移为 {Configuration.PassHeightDelta} mm，可能切穿工作台。请改为 -10 mm 以上的值")
                 Return
@@ -1059,6 +1066,14 @@ Partial Public Class MainViewModel : Inherits ObservableObject
         Dim service = Application.GetService(Of BambuA1Service)()
         If service Is Nothing OrElse Not service.IsConnected Then
             _snackbarService.GenerateError(label & " failed", "请先连接打印机")
+            Return
+        End If
+
+        ' 抬笔/落笔都会走到这里。A1 的床面就是 Z=0，负值一定是参数错了，
+        ' 发出去不是撞床就是被固件拒绝后坐标继续累加（jog 是开环的）。
+        If z < 0 Then
+            _snackbarService.GenerateError(label & " 已取消",
+                                           $"目标高度是 {z:F2} mm，床面以下是无效位置。请到工具配置面板把 Z 高度改成正值")
             Return
         End If
 

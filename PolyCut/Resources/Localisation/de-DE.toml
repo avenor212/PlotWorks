@@ -142,7 +142,7 @@
 "Regenerating..." = "Regenerating..." # LOC:TODO
 "Region Detection" = "Regionserkennung"
 "Region Detection Settings" = "Einstellungen der Regionserkennung"
-"Reload Languages. Checks online for updated language definitions" = "Reload Languages. Checks online for updated language definitions" # LOC:TODO
+"Reload language files from this PC" = "Reload language files from this PC" # LOC:TODO
 "Requires: {0}" = "Requires: {0}" # LOC:TODO
 "Rotation" = "Drehung"
 "SVG Exported" = "SVG exportiert"

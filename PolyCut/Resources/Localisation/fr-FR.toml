@@ -142,7 +142,7 @@
 "Regenerating..." = "Regenerating..." # LOC:TODO
 "Region Detection" = "Détection des régions"
 "Region Detection Settings" = "Paramètres de détection des régions"
-"Reload Languages. Checks online for updated language definitions" = "Sprachen neu laden. Prüft online auf aktualisierte Sprachdefinitionen"
+"Reload language files from this PC" = "Reload language files from this PC" # LOC:TODO
 "Requires: {0}" = "Requires: {0}" # LOC:TODO
 "Rotation" = "Rotation"
 "SVG Exported" = "SVG exporté"
@@ -446,6 +446,7 @@
 "Generate GCode" = "Générer le GCode"
 "No" = "Non"
 "Printer: " = "Imprimante : "
+"Reload Languages. Checks online for updated language definitions" = "Sprachen neu laden. Prüft online auf aktualisierte Sprachdefinitionen"
 "Send Preview" = "Envoyer l’aperçu"
 "Send to 3D Printer" = "Envoyer vers l’imprimante 3D"
 "Sent to Printer" = "Envoyé à l’imprimante"

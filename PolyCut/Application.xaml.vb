@@ -27,8 +27,9 @@ Partial Public Class Application
                                services.AddSingleton(Of ITaskBarService, TaskBarService)()
                                ' Service containing navigation, same as INavigationWindow... but without window
 
-                               'Update service
-                               services.AddSingleton(Of UpdateService)()
+                               ' 不再注册 UpdateService：更新检查指向上游 PolyCut 仓库，
+                               ' 对本分支无效，且会把用户导流到原版程序的 Releases 页。
+                               ' 建好自有仓库后再按 rename-debt.md 的方案接回。
 
                                services.AddSingleton(Of INavigationService, NavigationService)()
                                services.AddSingleton(Of SnackbarService)()

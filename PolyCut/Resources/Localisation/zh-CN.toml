@@ -1,4 +1,4 @@
-﻿# PolyCut Localisation
+# PolyCut Localisation
 # @version 2
 # @programversion 0.11.0
 
@@ -142,7 +142,7 @@
 "Regenerating..." = "重新生成中..."
 "Region Detection" = "区域检测"
 "Region Detection Settings" = "区域检测设置"
-"Reload Languages. Checks online for updated language definitions" = "重新加载语言。联网检查更新的语言定义"
+"Reload language files from this PC" = "重新加载本机语言文件"
 "Requires: {0}" = "需要：{0}"
 "Rotation" = "旋转"
 "SVG Exported" = "SVG 已导出"

@@ -110,12 +110,35 @@ dotnet build PolyCut/PolyCut.vbproj -c Debug
   需检出对应提交并运行各自的代码生成器生成 `Generated/` 目录（见 `Extern/IxMilia.Converters/src/*/generate-code.*`）。
 - 新增 NuGet 依赖：`MQTTnet 4.3.7.1207`、`FluentFTP 54.2.1`。
 
+### 3.1 发布包
+
+```powershell
+# 方式 A：框架依赖（约 30 MB），目标机需要 .NET 10 Desktop Runtime
+dotnet publish PolyCut/PolyCut.vbproj -c Release
+
+# 方式 B：自包含单文件（约 150 MB），目标机不需要装运行时
+dotnet publish PolyCut/PolyCut.vbproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
+```
+
+两种方式的产物都会汇总到 `PolyCut/bin/publish/FinalOutput/`。
+
+**发布目录必须带 `Resources\Fonts\` 下的 5 个 ttf。** `BundledFontRegistry` 是按
+`<exe 目录>\Resources\Fonts` 找字体的，缺了整个中文单线会退化回系统字体/空心轮廓，
+而且界面上不会有任何报错——只会发现"写出来的字不是单线"。`PolyCut.vbproj` 的发布 target
+已经处理了这件事（含 `PublishSingleFile` 的情况），不需要手工补文件。
+
+> 之前这条链路从没跑通过：`CopyToOutputDirectory` 只把字体放进 `bin\Debug`，发布目录原来一个
+> ttf 都没有；`MovePublishedFiles` 用 `DestinationFolder` 会把所有文件平铺到 `FinalOutput` 根下，
+> 丢掉了 `Resources\Fonts` 层级。两处都已修正，发布后请照上面的方式验一遍字体下拉里是否有
+> 5 款「单线 · …」。
+
 ## 4. 安全提示
 
 - 访问码等于打印机完整控制权。它**明文保存**在 `%LocalAppData%\PlotWorks\Printers\*.json`
   并可能出现在 `a1.log` 中，不要提交、外传或截图分享。
-- **`WorkZ` 默认是 0**：对 A1 而言 Z=0 等于喷嘴/刀尖贴床。第一次使用前必须按实际笔/刀安装高度
-  把 `Work Z` 调成安全的正值（例如 0.5–2 mm），否则抬手/落笔会撞床。
+- **`WorkZ` 默认是 5 mm，仍须按实际笔/刀安装高度确认**：对 A1 而言 Z=0 等于喷嘴/刀尖贴床，
+  负值会被程序直接拒绝（生成与抬落笔两处都有校验）。第一次使用前先用画纸实测，把 `Work Z`
+  调成贴合纸面的正值（通常 0.5–2 mm 起，再微调）。
 - A1 的 `gcode_line` 能执行任意 G-code；四角按钮和抬落笔会实际移动工具头，
   执行前先确认 Z 高度与床上没有障碍。
 - 仅局域网 + 开发者模式下云端功能（Handy、远程打印、OTA）不可用，这是拓竹的设计。

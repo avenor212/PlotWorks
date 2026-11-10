@@ -142,7 +142,7 @@
 "Regenerating..." = "Regenerating..." # LOC:TODO
 "Region Detection" = "領域検出"
 "Region Detection Settings" = "領域検出設定"
-"Reload Languages. Checks online for updated language definitions" = "言語を再読み込みします。更新された言語定義がオンラインにあるか確認します"
+"Reload language files from this PC" = "Reload language files from this PC" # LOC:TODO
 "Requires: {0}" = "Requires: {0}" # LOC:TODO
 "Rotation" = "回転"
 "SVG Exported" = "SVG をエクスポートしました"
@@ -446,6 +446,7 @@
 "Generate GCode" = "GCode を生成"
 "No" = "いいえ"
 "Printer: " = "プリンター: "
+"Reload Languages. Checks online for updated language definitions" = "言語を再読み込みします。更新された言語定義がオンラインにあるか確認します"
 "Send Preview" = "プレビューを送信"
 "Send to 3D Printer" = "3D プリンターへ送信"
 "Sent to Printer" = "プリンターへ送信しました"

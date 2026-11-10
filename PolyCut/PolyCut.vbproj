@@ -48,11 +48,29 @@
     <EmbeddedResource Include="Resources\vtracer.exe" />
     <Resource Include="Resources\banner_dark.svg" />
     <Resource Include="Resources\logo.ico" />
-    <Content Include="Resources\Fonts\PolyCut Hershey Cursive.ttf"><CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory></Content>
-    <Content Include="Resources\Fonts\PolyCut Hershey Gothic English.ttf"><CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory></Content>
-    <Content Include="Resources\Fonts\PolyCut Hershey Roman Simplex.ttf"><CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory></Content>
-    <Content Include="Resources\Fonts\PolyCut Hershey Script Complex.ttf"><CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory></Content>
-    <Content Include="Resources\Fonts\PolyCut Hershey Script Simplex.ttf"><CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory></Content>
+    <!-- CopyToOutputDirectory 只让文件进 bin\Debug|Release，publish 目录要另配
+         CopyToPublishDirectory：BundledFontRegistry 按 <exe 目录>\Resources\Fonts 找字体，
+         少了这一步发布包里没有单线字体，中文单线会整个失效。 -->
+    <Content Include="Resources\Fonts\PolyCut Hershey Cursive.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="Resources\Fonts\PolyCut Hershey Gothic English.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="Resources\Fonts\PolyCut Hershey Roman Simplex.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="Resources\Fonts\PolyCut Hershey Script Complex.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="Resources\Fonts\PolyCut Hershey Script Simplex.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -127,12 +145,27 @@
 
   <Target Name="MovePublishedFiles" AfterTargets="Publish">
     <Message Text="Moving published files to FinalOutput..." Importance="high" />
-    
+
     <ItemGroup>
         <PublishedFiles Include="$(PublishDir)**\*" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(PublishedFiles)" DestinationFolder="$(FinalPublishDir)" SkipUnchangedFiles="true" />
+    <!-- 必须用 %(RecursiveDir) 重建相对路径：DestinationFolder 是单一目录，
+         它会把所有文件平铺到 FinalOutput 根下，Resources\Fonts\*.ttf 就丢了层级，
+         而 BundledFontRegistry 是按 <exe 目录>\Resources\Fonts 找字体的。 -->
+    <Copy SourceFiles="@(PublishedFiles)"
+          DestinationFiles="@(PublishedFiles->'$(FinalPublishDir)%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true" />
+
+    <!-- PublishSingleFile 不会把 Content 项放进发布目录，单文件包里就没有字体。
+         这里显式再搬一次，让两种发布方式（单文件 / 目录）都能拿到 Resources\Fonts。 -->
+    <ItemGroup>
+        <PublishedFontFiles Include="$(MSBuildProjectDirectory)\Resources\Fonts\*.ttf" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(PublishedFontFiles)"
+          DestinationFolder="$(FinalPublishDir)Resources\Fonts\"
+          SkipUnchangedFiles="true" />
   </Target>
 </Project>
 

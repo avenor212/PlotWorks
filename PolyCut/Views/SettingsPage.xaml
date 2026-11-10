@@ -73,7 +73,7 @@
                         <ui:SymbolIcon FontSize="17" Symbol="ArrowCircleDown20" />
                     </StackPanel>
                     <ui:Button.ToolTip>
-                        <ToolTip loc:L.Value="Reload Languages. Checks online for updated language definitions" />
+                        <ToolTip loc:L.Value="Reload language files from this PC" />
                     </ui:Button.ToolTip>
                 </ui:Button>
             </StackPanel>

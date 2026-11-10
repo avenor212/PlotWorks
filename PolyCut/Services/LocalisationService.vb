@@ -1,7 +1,6 @@
 Imports LazyTranslate
 
 Public Class LocalisationService
-    Private Shared ReadOnly LocalisationBaseUri As New Uri("https://raw.githubusercontent.com/IridiumIO/PolyCut/refs/heads/master/PolyCut/Resources/Localisation/")
 
     Public Shared Async Function InitializeAsync() As Task
         Await LazyTranslate.InitialiseAsync(New LocalisationOptions With {
@@ -29,8 +28,14 @@ Public Class LocalisationService
         Return success
     End Function
 
+    ''' <summary>
+    ''' 重新加载当前语言文件。
+    ''' 只读本地目录与内嵌资源，<b>不联网</b>：上游的语言库属于原版 PolyCut，
+    ''' 对本分支的界面无效，拉到本地会把 zh-CN 的词条覆盖成上游版本
+    ''' （见 A1-README 1.7 与 rename-debt.md「自动更新 / 语言包地址」）。
+    ''' 等自有仓库建好、语言文件托管过去之后，再在这里接回远程检查。
+    ''' </summary>
     Public Shared Function CheckForLanguageUpdate() As Task(Of Boolean)
-        Dim languageCode = Application.GetService(Of UIConfiguration)().Language
-        Return LazyTranslate.CheckForLanguageUpdateAsync(languageCode, LocalisationBaseUri)
+        Return Task.FromResult(True)
     End Function
 End Class

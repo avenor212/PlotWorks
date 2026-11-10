@@ -36,6 +36,8 @@ Public Class SettingsHandler : Inherits ObservableObject
 
         If truePortable Then DataFolder = New IO.DirectoryInfo(IO.Path.Combine(IO.Path.GetDirectoryName(AppContext.BaseDirectory), ".PlotWorksData"))
 
+        ' 便携模式的数据本来就在程序目录里，不去动 AppData 里的旧配置
+        If Not truePortable Then MigrateLegacyDataFolder()
 
         If Not DataFolder.Exists Then DataFolder.Create()
         Await PrinterSettings.InitialiseSettings(Of Printer)("PolyCut", $"{NameOf(Printer)}s")
@@ -55,6 +57,36 @@ Public Class SettingsHandler : Inherits ObservableObject
         GenerateEV()
 
     End Function
+
+    ''' <summary>
+    ''' 把上游 PolyCut 的配置目录整份搬到当前数据目录。
+    ''' 旧版保存在 %LocalAppData%\IridiumIO\PolyCut，本分支改成了 %LocalAppData%\PlotWorks
+    ''' （见 rename-debt.md）。少了这一步，从旧版升级上来的用户会丢掉打印机配置
+    ''' （IP / 访问码 / 序列号）、界面语言和工具配置，必须全部重填。
+    ''' 只在目标目录为空时拷贝，且只补齐缺失文件，不覆盖已有内容。
+    ''' </summary>
+    Private Shared Sub MigrateLegacyDataFolder()
+        Try
+            Dim legacyPath As String = IO.Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "IridiumIO", "PolyCut")
+            If Not IO.Directory.Exists(legacyPath) Then Return
+
+            ' 目标里已经有文件，说明用户已经在新版里用过，不动它
+            If DataFolder.Exists AndAlso
+               IO.Directory.GetFileSystemEntries(DataFolder.FullName, "*", IO.SearchOption.AllDirectories).Length > 0 Then Return
+
+            For Each sourceFile As String In IO.Directory.GetFiles(legacyPath, "*", IO.SearchOption.AllDirectories)
+                Dim relativePath As String = IO.Path.GetRelativePath(legacyPath, sourceFile)
+                Dim targetFile As String = IO.Path.Combine(DataFolder.FullName, relativePath)
+                Dim targetDirectory As String = IO.Path.GetDirectoryName(targetFile)
+                If Not String.IsNullOrEmpty(targetDirectory) Then IO.Directory.CreateDirectory(targetDirectory)
+                If Not IO.File.Exists(targetFile) Then IO.File.Copy(sourceFile, targetFile)
+            Next
+        Catch ex As Exception
+            ' 迁移失败不能挡住启动：数据目录会按默认值重建
+            System.Diagnostics.Debug.WriteLine($"Legacy settings migration failed: {ex.Message}")
+        End Try
+    End Sub
 
     Public Shared Async Function LoadToolConfiguration(Of T As {SettingsBase, ISaveable, New})() As Task(Of T)
         Dim defaults As New T()

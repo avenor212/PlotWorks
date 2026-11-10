@@ -16,7 +16,7 @@
 | G-code 头部注释 | `GCodeGenerator.vb:152,156` |
 | 可执行文件名 | `PolyCut.vbproj` 的 `<AssemblyName>PlotWorks</AssemblyName>` |
 | 程序集资源 URI | XAML 里 2 处 `pack://…/PlotWorks;component/…` |
-| 配置目录 | `%LocalAppData%\PlotWorks`（四处硬编码收敛到 `SettingsHandler.AppDataFolderName`） |
+| 配置目录 | `%LocalAppData%\PlotWorks`（四处硬编码收敛到 `SettingsHandler.AppDataFolderName`）；首次启动且新目录为空时，自动从旧目录 `%LocalAppData%\IridiumIO\PolyCut` 递归拷贝，老用户的打印机配置不会丢 |
 | 便携目录 | `.PlotWorksData`；目录名 `plotworks` 或 `polycut` 都触发便携模式 |
 | 开始菜单快捷方式 | `PlotWorks.lnk` |
 | README、A1-README、测试脚本 | 品牌名与路径 |
@@ -40,20 +40,24 @@
 
 **触发时机**：准备对外发版、确定要给用户一个“双击打开”的体验时。
 
-### 2. 自动更新 / 语言包地址
+### 2. 自动更新 / 语言包地址（已切断，待自有仓库后接回）
 
-**现状**：三处指向上游仓库，对本分支无效。
+**现状**：2026-11-10 发布前已切断对上游的两条网络依赖。
 
-- `UpdateService.vb:5` `versionURL` → `raw.githubusercontent.com/IridiumIO/PolyCut/...`
-- `UpdateService.vb:7` `updateURL` → `github.com/IridiumIO/PolyCut/releases/latest`
-- `LocalisationService.vb:4` `LocalisationBaseUri` → 同上
+- **`UpdateService` 整个删除**（连同 `Application.xaml.vb` 的 DI 注册）。它指向上游
+  `Data/version.json` 与 `releases/latest`，而上游版本数据还停在 `0.10.0`、本分支是 `0.11.0`——
+  目前不触发纯属巧合。上游一旦发布 `0.12.0`，用户点"检查更新"就会被导流去下载**原版 PolyCut**。
+- **`LocalisationService.CheckForLanguageUpdate` 改为只重载本机语言文件**，不再从上游
+  `LocalisationBaseUri` 拉取；上拉会把 zh-CN 词条覆盖成上游版本。设置页按钮的文案同步改成
+  「重新加载本机语言文件」。
 
-**为什么没做**：现在没有新仓库，改了只是换个失效地址。而且 `LocalisationService` 的 `ApplicationName = "PolyCut"`（`:12`）影响 LazyTranslate 的本地化缓存与版本比较，改动要连同语言文件重新生成一起验证。
+**仍未做**：`LocalisationService.ApplicationName` 仍是 `"PolyCut"`（`:12`）。它影响
+LazyTranslate 的本地化缓存目录与版本比较，改动必须连同语言文件重新生成一起验证。
 
-**做法**：
+**接回方式**：
 
 1. 先建仓库、上传 `Data/version.json` 与语言文件
-2. 三个 URL 指向新仓库
+2. 恢复 UpdateService，三个 URL 指向新仓库
 3. `ApplicationName` 改为 `PlotWorks`，把 `Localisation/*.toml` 的 `# @version` 提一级，保证旧安装的本地缓存被覆盖
 4. 在真机上验证：启动 → 检查更新 → 切换语言
 

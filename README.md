@@ -64,7 +64,7 @@ PlotWorks 是 [PolyCut](https://github.com/IridiumIO/PolyCut) 的一个魔改分
 - MQTT 断线不会自动重连，需要手动点 `Connect`
 - Jog 与四角移动是开环的：发送后不校验打印机响应，被固件拒绝时坐标仍会累加，需要用位置校准纠正
 - 切割功能目前整体屏蔽（`UIConfiguration.EnableCutting = False`），等刀头设计定稿再开放。当前定位是**笔绘**
-- 自动更新检查仍指向上游 PolyCut 仓库，对本分支不生效，请手动获取新版本
+- 没有在线更新检查（已移除指向上游 PolyCut 仓库的更新服务），请手动获取新版本
 
 # 快速开始
 
@@ -77,13 +77,15 @@ PlotWorks 是 [PolyCut](https://github.com/IridiumIO/PolyCut) 的一个魔改分
 完整步骤与踩坑记录见 **[Docs/A1-README.md](Docs/A1-README.md)**。
 
 > [!WARNING]
-> **`Work Z` 默认是 0。** 对 A1 来说 Z=0 等于笔尖/刀尖贴床，抬手落笔会撞床。第一次使用前必须按实际笔或刀的安装高度，把 `Work Z` 调成安全的正值（例如 0.5–2 mm）。
+> **`Work Z` 默认是 5 mm，但必须按你实际的笔/刀安装高度确认一遍。** 对 A1 来说 Z=0 等于笔尖/刀尖贴床；落笔高度为负值时程序会直接拒绝（床面以下没有有效位置）。第一次使用前先量好高度再动。
 >
 > 访问码等于打印机的完整控制权，它以明文保存在 `%LocalAppData%\PlotWorks\Printers\*.json`，不要提交或截图分享。
 
 # 安装
 
-从 Releases 下载可执行程序，免安装。
+从 Releases 下载压缩包解压即用，不需要安装。压缩包内需保留 `Resources\Fonts\` 目录——5 款单线字体在里面，删了中文就写不成单线。
+
+如果是框架依赖版（约 30 MB），还需要装 .NET 10 Desktop Runtime；自包含版（约 150 MB）不需要。
 
 程序是便携式的：配置文件默认写到 `%LocalAppData%\PlotWorks`；如果把程序放在任意名为 `PlotWorks`（或旧版遗留的 `PolyCut`）的目录里，就会改用该目录下的 `.PlotWorksData`，从而实现完全便携。
 
