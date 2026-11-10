@@ -112,6 +112,28 @@ dotnet build PolyCut/PolyCut.vbproj -c Debug
 
 ### 3.1 发布包
 
+**发版请直接用脚本**，它把下面那些坑都收进流程里了：
+
+```powershell
+.\tools\pack-release.ps1                               # 自包含单文件，约 67 MB 压缩包
+.\tools\pack-release.ps1 -Flavor framework-dependent   # 框架依赖，约 12 MB 压缩包
+```
+
+产物在 `dist/`：`PlotWorks-<版本>-win-x64-<形态>.zip` 加一个同名 `.sha256.txt`；包内顶层目录带
+版本与形态，并附 `LICENSE.txt` 与 `README.md`。两种形态的文件名不同，可以同时留在 `dist/` 里。
+
+脚本会做四件事：
+
+1. **校验三处版本号一致**（`SettingsHandler.SemanticVersion`、`vbproj` 的 `<Version>`、
+   `Data/version.json`），不一致直接中止——以前这三个地方改漏一处就会出"界面 1.0.0、exe 属性
+   0.11.0"的包；
+2. **全量发布**：先清 `FinalOutput` 和各项目 `bin\obj` 下的 `Release`。增量构建会漏掉
+   `wpfgfx_cor3.dll` 这类 WPF 原生库，打出来的包双击就闪退；
+3. **校验产物**：1 个 exe、5 个 ttf、exe 文件属性版本，缺任何一样都拒绝出包；
+4. 清掉 `IxMilia.Dxf.xml` 和 pdb 之类不进包的文件，再压缩 + 出 SHA256。
+
+手工发布也可以，命令如下（产物同样汇总到 `PolyCut/bin/publish/FinalOutput/`）：
+
 ```powershell
 # 方式 A：框架依赖（约 30 MB），目标机需要 .NET 10 Desktop Runtime
 dotnet publish PolyCut/PolyCut.vbproj -c Release
@@ -119,8 +141,6 @@ dotnet publish PolyCut/PolyCut.vbproj -c Release
 # 方式 B：自包含单文件（约 150 MB），目标机不需要装运行时
 dotnet publish PolyCut/PolyCut.vbproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
 ```
-
-两种方式的产物都会汇总到 `PolyCut/bin/publish/FinalOutput/`。
 
 **发布目录必须带 `Resources\Fonts\` 下的 5 个 ttf。** `BundledFontRegistry` 是按
 `<exe 目录>\Resources\Fonts` 找字体的，缺了整个中文单线会退化回系统字体/空心轮廓，

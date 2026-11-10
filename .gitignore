@@ -367,3 +367,4 @@ FodyWeavers.xsd
 # 会把核心项目文件排除在版本库之外，导致 clone 后无法构建，已移除。
 /.shots/
 /promo/
+/dist/
