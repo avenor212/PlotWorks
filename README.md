@@ -74,7 +74,7 @@ PlotWorks 是 [PolyCut](https://github.com/IridiumIO/PolyCut) 的一个魔改分
 4. **对位**：`Home` 回零，用 Jog 走到已知点 → 输入实测坐标 → `Set as current position`
 5. **生成并上传**：画好图 → 生成 → Export 页 `Send to A1` → 在打印机屏幕上启动
 
-完整步骤与踩坑记录见 **[Docs/A1-README.md](Docs/A1-README.md)**。
+完整操作步骤见 **[用户手册](Docs/user-guide.md)**；魔改范围、通讯层实现、构建与发布方式见 **[Docs/A1-README.md](Docs/A1-README.md)**。
 
 > [!WARNING]
 > **`Work Z` 默认是 5 mm，但必须按你实际的笔/刀安装高度确认一遍。** 对 A1 来说 Z=0 等于笔尖/刀尖贴床；落笔高度为负值时程序会直接拒绝（床面以下没有有效位置）。第一次使用前先量好高度再动。
