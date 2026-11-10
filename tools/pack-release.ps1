@@ -218,6 +218,11 @@ Copy-Item (Join-Path $FinalOutput '*') $stage -Recurse -Force
 Copy-Item (Join-Path $RepoRoot 'LICENSE.txt') $stage -Force
 Copy-Item (Join-Path $RepoRoot 'README.md') $stage -Force
 
+# 用户手册与主界面截图一起进包：解压后第一眼就能看到怎么用。
+# 手册里指向 A1-README.md 之类的链接在包内会失效，正文本身是自洽的。
+Copy-Item (Join-Path $RepoRoot 'Docs\user-guide.md') (Join-Path $stage '用户手册.md') -Force
+Copy-Item (Join-Path $RepoRoot 'Docs\screenshot-main.png') $stage -Force
+
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 if (Test-Path $zip) { Remove-Item $zip -Force }
 [System.IO.Compression.ZipFile]::CreateFromDirectory(
@@ -240,7 +245,7 @@ Write-Host '发布包已生成' -ForegroundColor Green
 Write-Host ("  {0}" -f $zip)
 Write-Host ("  版本      {0}" -f $Version)
 Write-Host ("  形态      {0}" -f $runtime)
-Write-Host ("  内容      {0} 个文件（另附 LICENSE.txt、README.md）" -f $fileCount)
+Write-Host ("  内容      {0} 个文件（另附 LICENSE.txt、README.md、用户手册.md、screenshot-main.png）" -f $fileCount)
 Write-Host ("  大小      {0:N1} MB" -f ($zipItem.Length / 1MB))
 Write-Host ("  SHA256    {0}" -f $hash)
 Write-Host ("  校验文件  {0}" -f $hashFile)
