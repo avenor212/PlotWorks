@@ -28,7 +28,7 @@ GROUP_ID = uuid.uuid4()
 CONFIG_TEMPLATE = """{
   "Area": "\\u00220,0,256,256\\u0022",
   "Version": 0.2,
-  "SoftwareVersion": "0.11.0",
+  "SoftwareVersion": "1.0.0",
   "Name": "Configuration",
   "SelectedToolMode": 1,
   "Tolerance": 0.01,

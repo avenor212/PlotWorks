@@ -6,7 +6,7 @@ Partial Public Class ProcessorConfiguration : Inherits ObservableObject : Implem
 
     <ImplementsProperty(GetType(ISaveable), NameOf(ISaveable.Version))>
     <ObservableProperty> Private _Version As Single = 0.2
-    <ObservableProperty> Private _SoftwareVersion As String = "0.7"
+    <ObservableProperty> Private _SoftwareVersion As String = "1.0.0"
 
     <ImplementsProperty(GetType(ISaveable), NameOf(ISaveable.Name))>
     <ObservableProperty> Private _Name As String = "Configuration"

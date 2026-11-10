@@ -5,6 +5,9 @@
     <TargetFramework>net10.0-windows</TargetFramework>
     <RootNamespace>PolyCut</RootNamespace>
     <AssemblyName>PlotWorks</AssemblyName>
+    <!-- 版本号有两处，改一处必须同步另一处：
+         这里（文件属性 / 程序集版本）与 Models/SettingsHandler.vb 的 SemanticVersion（界面显示）。 -->
+    <Version>1.0.0</Version>
     <UseWPF>true</UseWPF>
     <Company>IridiumIO</Company>
     <Description>Plotter/Cutter GCode Generator for 3D printers</Description>

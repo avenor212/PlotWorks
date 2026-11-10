@@ -45,7 +45,7 @@
 **现状**：2026-11-10 发布前已切断对上游的两条网络依赖。
 
 - **`UpdateService` 整个删除**（连同 `Application.xaml.vb` 的 DI 注册）。它指向上游
-  `Data/version.json` 与 `releases/latest`，而上游版本数据还停在 `0.10.0`、本分支是 `0.11.0`——
+  `Data/version.json` 与 `releases/latest`，而上游版本数据还停在 `0.10.0`、本分支已是 `1.0.0`——
   目前不触发纯属巧合。上游一旦发布 `0.12.0`，用户点"检查更新"就会被导流去下载**原版 PolyCut**。
 - **`LocalisationService.CheckForLanguageUpdate` 改为只重载本机语言文件**，不再从上游
   `LocalisationBaseUri` 拉取；上拉会把 zh-CN 词条覆盖成上游版本。设置页按钮的文案同步改成

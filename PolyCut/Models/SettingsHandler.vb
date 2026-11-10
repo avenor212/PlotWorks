@@ -12,7 +12,7 @@ Imports SharpVectors.Renderers
 
 Public Class SettingsHandler : Inherits ObservableObject
 
-    Public Shared Property SemanticVersion As NuGet.Versioning.NuGetVersion = New NuGet.Versioning.NuGetVersion(0, 11, 0)
+    Public Shared Property SemanticVersion As NuGet.Versioning.NuGetVersion = New NuGet.Versioning.NuGetVersion(1, 0, 0)
 
     Public Shared ReadOnly Property Version As String
         Get
