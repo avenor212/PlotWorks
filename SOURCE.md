@@ -20,11 +20,11 @@ PlotWorks 是基于 **PolyCut**（作者 IridiumIO，<https://github.com/Iridium
 
 | 项目 | 内容 |
 |---|---|
-| 源码仓库 | <https://github.com/qwq20002/PlotWorks> |
+| 源码仓库 | <https://github.com/avenor212/PlotWorks> |
 | 本版本对应标签 | `v1.0.0` |
-| 网页直接浏览 | <https://github.com/qwq20002/PlotWorks/tree/v1.0.0> |
-| 打包下载（zip） | <https://github.com/qwq20002/PlotWorks/archive/refs/tags/v1.0.0.zip> |
-| 克隆命令 | `git clone --recurse-submodules https://github.com/qwq20002/PlotWorks`，然后 `git checkout v1.0.0` |
+| 网页直接浏览 | <https://github.com/avenor212/PlotWorks/tree/v1.0.0> |
+| 打包下载（zip） | <https://github.com/avenor212/PlotWorks/archive/refs/tags/v1.0.0.zip> |
+| 克隆命令 | `git clone --recurse-submodules https://github.com/avenor212/PlotWorks`，然后 `git checkout v1.0.0` |
 | 取用费用 | **免费**，不需要注册、不需要密码、不设任何访问限制 |
 
 > 源码以公开可读的文本形式提供，解压与阅读不需要任何特殊口令或密钥。
@@ -72,6 +72,6 @@ PlotWorks 的作者与 PolyCut 的作者（IridiumIO）**没有隶属或合作�
 |---|---|
 | 源码索取 / 许可证相关问题 | `ysh01298@126.com` |
 | 购买、发票与售后支持 | `ysh01298@126.com` |
-| 问题反馈 | <https://github.com/qwq20002/PlotWorks/issues> |
+| 问题反馈 | <https://github.com/avenor212/PlotWorks/issues> |
 
 > 每次发新版本，必须同步：源码仓库打新 tag → 更新本文件里的版本号与标签 → 重新打包。源码与二进制对不上的"源码获取说明"等于没有说明。
