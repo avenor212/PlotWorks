@@ -99,13 +99,36 @@ G-code 生成（`GCodeGenerator`）、预览、四角按钮、参考点捕获都
 
 ## 3. 构建
 
-从源码构建需要连同子模块一起检出，并生成子模块内部的代码：
+从源码构建需要连同子模块一起检出，并生成子模块内部的代码。仓库提供了一个准备脚本：
+
+```powershell
+git clone --recurse-submodules <仓库地址> PlotWorks
+cd PlotWorks
+.\tools\prepare-build.ps1
+```
+
+脚本做三件事：
+
+1. 把子模块里 4 个 `global.json` 的 SDK 锁定从 `8.0.100 / latestMinor` 放宽到 `latestMajor`。
+   **不这样做，只装了 .NET 10 SDK 的机器会在代码生成阶段报 "SDK not found"**，随后构建出现大量
+   `CS0115 没有找到适合的方法来重写`——那是 `Generated/` 没生成，不是代码本身的问题。
+2. 运行 `Dwg` / `Dxf` 的代码生成器，产出子项目里被 `.gitignore` 排除的 `Generated/`。
+3. 构建 `PolyCut/PolyCut.vbproj -c Debug`（加 `-SkipBuild` 可只做前两步）。
+
+环境要求：**.NET SDK 10.0.1xx 或更高**，以及 **.NET 8 运行时**（生成器是 `net8.0` 项目）。
+
+手动步骤（与脚本等价）：
 
 ```powershell
 git clone --recurse-submodules <仓库地址> PlotWorks
 cd PlotWorks
 
-# Dwg / Dxf 的 Generated/ 目录由子模块自己的生成器产出，不在仓库里
+# 先用编辑器把下面 4 个文件的 "rollForward": "latestMinor" 改成 "latestMajor"
+#   Extern/IxMilia.Converters/global.json
+#   Extern/IxMilia.Converters/src/IxMilia.Dwg/global.json
+#   Extern/IxMilia.Converters/src/IxMilia.Dxf/global.json
+#   Extern/IxMilia.Converters/src/IxMilia.Pdf/global.json
+
 .\Extern\IxMilia.Converters\src\IxMilia.Dwg\generate-code.ps1
 cmd /c .\Extern\IxMilia.Converters\src\IxMilia.Dxf\generate-code.cmd
 

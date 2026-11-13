@@ -89,7 +89,7 @@ PlotWorks 是 [PolyCut](https://github.com/IridiumIO/PolyCut) 的一个魔改分
 
 程序是便携式的：配置文件默认写到 `%LocalAppData%\PlotWorks`；如果把程序放在任意名为 `PlotWorks`（或旧版遗留的 `PolyCut`）的目录里，就会改用该目录下的 `.PlotWorksData`，从而实现完全便携。
 
-**从源码构建**：源码、构建脚本与字形数据的生成链见 [SOURCE.md](SOURCE.md)；`git clone --recurse-submodules`、子模块代码生成与 `dotnet build` 的完整步骤见 [Docs/A1-README.md](Docs/A1-README.md)。
+**从源码构建**：源码、构建脚本与字形数据的生成链见 [SOURCE.md](SOURCE.md)。检出子模块后先跑 `.\tools\prepare-build.ps1`（它会生成子模块的 `Generated/` 再构建），完整说明见 [Docs/A1-README.md](Docs/A1-README.md)。
 
 > 配置目录自本分支起改为 `%LocalAppData%\PlotWorks`。如果你之前跑过上游或早期版本，打印机配置还留在 `%LocalAppData%\IridiumIO\PolyCut`，手动复制过来即可。
 
