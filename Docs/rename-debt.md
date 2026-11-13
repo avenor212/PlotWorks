@@ -75,7 +75,7 @@ LazyTranslate 的本地化缓存目录与版本比较，改动必须连同语言
 | `.slnx` 与目录名 | `PolyCut.slnx`、`PolyCut/` 等 4 个目录 | 同上，属内部结构。**注意**：`PolyCut/` 这个目录名同时是便携模式的识别依据之一，改目录要同步 `ApplicationHostService.vb:43` |
 | G-code 尾部 `OrcaSlicer PolyCut` | `GCodeGenerator.vb:173` | 位于 Klipper 元数据块内，属兼容标记，改了有未知风险；A1 不读这一段 |
 | `InitialiseSettings("PolyCut", …)` 参数 | `SettingsHandler.vb:41-43` | 该参数在 `SettingsBase.vb:33` 的函数体里**未被使用**，是死参数，不影响任何路径 |
-| 历史测试记录 | `Docs/trial-reports/*.md` | 记录的是当时真实跑的程序与版本，改动等于篡改实验记录 |
+| 历史测试记录 | `Docs/trial-reports/*.md`（开发期记录，不随公开仓库发布） | 记录的是当时真实跑的程序与版本，改动等于篡改实验记录 |
 
 ---
 

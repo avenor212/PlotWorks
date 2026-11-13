@@ -54,7 +54,19 @@ PolyCut 内置 5 款单线字体，用于切割、刻字和钢笔描绘。它们
 数据在 `PolyCut.Shared/Resources/hanzi-strokes.json`（嵌入资源，约 6 MB），每个字存**笔画中位线**（hand-written centre line），也就是一笔下去笔尖走的轨迹。
 
 - 来源：[Make Me a Hanzi](https://github.com/skishore/makemeahanzi) 的 `graphics.txt`，派生自 Arphic PL KaitiM GB / UKai，**Arphic Public License**
-- 生成脚本：[tools/export-hanzi-json.py](tools/export-hanzi-json.py)（RDP 简化，容差 2/1024 em；标点与心形字形直接写在脚本里）
+- 生成脚本：[tools/export-hanzi-json.py](../tools/export-hanzi-json.py)（RDP 简化，容差 2/1024 em；标点与心形字形直接写在脚本里）
+
+### 汉字数据的修改声明（Arphic PL §2(a)）
+
+Arphic Public License 第 2(a) 条要求：对字体的修改必须附一份醒目声明，说明**如何修改**与**何时修改**。本项目对原始数据的修改如下：
+
+| 项 | 内容 |
+|---|---|
+| 原始数据 | Make Me a Hanzi `graphics.txt`（字段 `character` / `strokes` / `medians`），源自 Arphic PL KaitiM GB / UKai |
+| 修改时间 | 2026-11 首次生成；此后随 `tools/export-hanzi-json.py` 的改动重新生成 |
+| 修改方式 | ① 只保留 `medians`（笔画中位线），丢弃 `strokes`（轮廓）字段；② 对中位线做 RDP 简化，容差 2/1024 em；③ 字符集收窄为 GB2312 全集（6763 字），其余字符不收录；④ 另手写 16 个全角标点与 ♥/♡ 骨架，追加进同一数据文件；⑤ 输出为 `PolyCut.Shared/Resources/hanzi-strokes.json`（JSON，无加密、无压缩、无专有格式） |
+| 修改后的获取方式 | 本仓库公开提供脚本与产物，见 `licenses/ARPHICPL.TXT`；满足 §2(b) 的 "Freely Available" |
+| 许可 | 该数据整体继续以 Arphic Public License 分发，不并入本项目的 GPL-3.0（两套义务并存） |
 
 渲染规则（`HersheyTextRenderer.TryBuildGeometry`）：
 
@@ -78,7 +90,7 @@ PolyCut 内置 5 款单线字体，用于切割、刻字和钢笔描绘。它们
 
 - 字体文件作为 **Content** 随程序复制到 `<输出目录>\Resources\Fonts\`
 - WPF 只有 `"目录\#字体族名"` 这种**字符串形式**能解析出字形；`New FontFamily(Uri, String)` 构造函数和 `"./相对路径/#名字"` 都会静默失败（`TryGetGlyphTypeface` 返回 False）
-- 加载逻辑在 [BundledFontRegistry.vb](PolyCut/Services/BundledFontRegistry.vb)
+- 加载逻辑在 [BundledFontRegistry.vb](../PolyCut/Services/BundledFontRegistry.vb)
 - 项目文件里存的是 `bundled:PolyCut Hershey Script Simplex` 这样的稳定标记，而不是绝对路径——否则换目录/换机器就丢字体
 
 ## 重新生成
@@ -96,7 +108,7 @@ python tools/export-hershey-json.py tools/hershey-src PolyCut.Shared/Resources/h
 python tools/export-hanzi-json.py
 ```
 
-原始 `.jhf` 在 [tools/hershey-src/](tools/hershey-src/)（5 个文件，公有领域）。
+原始 `.jhf` 在 [tools/hershey-src/](../tools/hershey-src/)（5 个文件，公有领域）；同目录的 `graphics.txt` 是汉字数据的输入，**适用 Arphic PL 而非 Hershey 公有领域许可**，见该目录的 `README.md`。
 
 ## 已知限制
 

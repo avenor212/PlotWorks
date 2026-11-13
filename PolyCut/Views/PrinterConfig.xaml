@@ -241,7 +241,7 @@
                                 <ui:TextBox x:Name="PrinterHostAddress"
                                             Grid.Row="0" Grid.Column="1"
                                             ClearButtonEnabled="False" GotKeyboardFocus="TextBox_GotKeyboardFocus"
-                                            PlaceholderText="192.168.31.113"
+                                            PlaceholderText="192.168.1.50"
                                             Text="{Binding MainVM.Printer.HostAddress, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
 
                                 <Label Grid.Row="2" Grid.Column="0"

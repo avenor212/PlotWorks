@@ -27,7 +27,7 @@ PlotWorks 是 [PolyCut](https://github.com/IridiumIO/PolyCut) 的一个魔改分
 
 # 现在能做什么
 
-以下都在真机上跑过（详见 [Docs/trial-reports/STATUS.md](Docs/trial-reports/STATUS.md)）。
+以下都在 Bambu Lab A1 真机上跑过；开发期的测试记录不随公开仓库发布。
 
 ### 画布与编辑
 
@@ -89,6 +89,8 @@ PlotWorks 是 [PolyCut](https://github.com/IridiumIO/PolyCut) 的一个魔改分
 
 程序是便携式的：配置文件默认写到 `%LocalAppData%\PlotWorks`；如果把程序放在任意名为 `PlotWorks`（或旧版遗留的 `PolyCut`）的目录里，就会改用该目录下的 `.PlotWorksData`，从而实现完全便携。
 
+**从源码构建**：源码、构建脚本与字形数据的生成链见 [SOURCE.md](SOURCE.md)；`git clone --recurse-submodules`、子模块代码生成与 `dotnet build` 的完整步骤见 [Docs/A1-README.md](Docs/A1-README.md)。
+
 > 配置目录自本分支起改为 `%LocalAppData%\PlotWorks`。如果你之前跑过上游或早期版本，打印机配置还留在 `%LocalAppData%\IridiumIO\PolyCut`，手动复制过来即可。
 
 # 要求
@@ -112,6 +114,8 @@ PlotWorks 是 [PolyCut](https://github.com/IridiumIO/PolyCut) 的一个魔改分
 
 - 界面、通讯层（A1 MQTT/FTPS）、中文单线字体与汉化由本分支添加
 - 字形数据来自 Hershey 矢量字体（Dr. A. V. Hershey / U.S. National Bureau of Standards，1967），见 [Docs/fonts.md](Docs/fonts.md)
+- 汉字骨架数据源自 Arphic 字体，单独适用 Arphic Public License，见 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) 与 [licenses/](licenses/)
+- 对应源码的获取方式见 [SOURCE.md](SOURCE.md)
 - 上游项目仍然值得支持：<a href="https://ko-fi.com/iridiumio" target="_blank"><img height="28" style="border:0" src="https://cdn.ko-fi.com/cdn/kofi3.png?v=3" alt="Buy Me a Coffee at ko-fi.com"/></a>
 
 如果你 fork 或再分发，请同样保留上述出处与 GPL 条款。

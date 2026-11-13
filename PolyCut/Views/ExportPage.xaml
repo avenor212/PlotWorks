@@ -94,7 +94,7 @@
             </ComboBox>
 
             <Label Margin="0 10 0 0" loc:L.Context="Bambu Lab A1 Connection" loc:L.Value="Host Address" />
-            <ui:TextBox x:Name="HostAddress" PlaceholderText="192.168.31.113" Text="{Binding MainVM.Printer.HostAddress, Mode=TwoWay}" />
+            <ui:TextBox x:Name="HostAddress" PlaceholderText="192.168.1.50" Text="{Binding MainVM.Printer.HostAddress, Mode=TwoWay}" />
 
             <Label Margin="0 10 0 0" loc:L.Context="Bambu Lab A1 Connection" loc:L.Value="Access Code" />
             <ui:TextBox x:Name="AccessCode" PlaceholderText="{loc:T 8 character access code}" Text="{Binding MainVM.Printer.AccessCode, Mode=TwoWay}" />

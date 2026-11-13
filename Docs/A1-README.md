@@ -1,6 +1,6 @@
-# PolyCut for Bambu Lab A1（魔改说明）
+# PlotWorks for Bambu Lab A1（魔改说明）
 
-本仓库从 PolyCut 官方源码魔改而来，**仅面向 Bambu Lab A1**。通过 A1 的局域网 MQTT（TLS，8883）
+本仓库从 PolyCut 的上游源码（<https://github.com/IridiumIO/PolyCut>，GPL-3.0）魔改而来，**仅面向 Bambu Lab A1**。通过 A1 的局域网 MQTT（TLS，8883）
 接收状态、发送 G-code，通过隐式 TLS 的 FTPS（990）上传待打印文件。Klipper / Moonraker 上传路径已不再使用。
 
 > **一句话**：画图 → 生成 → 上传到打印机根目录 → **在打印机屏幕上手动启动**。
@@ -99,7 +99,16 @@ G-code 生成（`GCodeGenerator`）、预览、四角按钮、参考点捕获都
 
 ## 3. 构建
 
+从源码构建需要连同子模块一起检出，并生成子模块内部的代码：
+
 ```powershell
+git clone --recurse-submodules <仓库地址> PlotWorks
+cd PlotWorks
+
+# Dwg / Dxf 的 Generated/ 目录由子模块自己的生成器产出，不在仓库里
+.\Extern\IxMilia.Converters\src\IxMilia.Dwg\generate-code.ps1
+cmd /c .\Extern\IxMilia.Converters\src\IxMilia.Dxf\generate-code.cmd
+
 dotnet build PolyCut/PolyCut.vbproj -c Debug
 ```
 
@@ -108,6 +117,7 @@ dotnet build PolyCut/PolyCut.vbproj -c Debug
 - `NuGet.Config` 指向 `nuget.org`。
 - `Extern/IxMilia.Converters` 为 git 子模块；`src/IxMilia.Dwg`、`src/IxMilia.Dxf`、`src/IxMilia.Pdf`
   需检出对应提交并运行各自的代码生成器生成 `Generated/` 目录（见 `Extern/IxMilia.Converters/src/*/generate-code.*`）。
+  **跳过这一步会直接编译失败**，因为 `PolyCut.vbproj` 硬引用这两个子项目。
 - 新增 NuGet 依赖：`MQTTnet 4.3.7.1207`、`FluentFTP 54.2.1`。
 
 ### 3.1 发布包

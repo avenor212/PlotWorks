@@ -9,10 +9,12 @@
          这里（文件属性 / 程序集版本）与 Models/SettingsHandler.vb 的 SemanticVersion（界面显示）。 -->
     <Version>1.0.0</Version>
     <UseWPF>true</UseWPF>
-    <Company>IridiumIO</Company>
-    <Description>Plotter/Cutter GCode Generator for 3D printers</Description>
-    <Copyright>Copyright © 2026</Copyright>
-    <PackageProjectUrl>https://github.com/IridiumIO/PolyCut/</PackageProjectUrl>
+    <!-- 署名（GPL-3.0 §5(a)）：本程序是 PolyCut 的修改版，必须能让接收者识别出
+         这是衍生作品而不是上游原版。上游 IridiumIO 的署名保留在版权行与 README 出处段，
+         不再占据 Company 位置——否则 exe 文件属性会显示成上游出品。 -->
+    <Company>PlotWorks</Company>
+    <Description>Plotter/Cutter GCode Generator for 3D printers (PlotWorks fork, Bambu Lab A1)</Description>
+    <Copyright>Copyright © 2026 PlotWorks contributors; based on Copyright © IridiumIO PolyCut (GPL-3.0)</Copyright>
     <ApplicationIcon>Resources\logo.ico</ApplicationIcon>
     <DebugType>embedded</DebugType>
   </PropertyGroup>

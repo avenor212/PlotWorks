@@ -303,7 +303,7 @@ MQTT 断线**不会**自动重连，需要手动点连接。
 - 切割功能当前整体屏蔽（`EnableCutting = False`），定位是笔绘；
 - 没有在线更新检查，新版本请手动获取；
 - 字体相关的能力仍在推进（画布所见与刀路效果的差异、中文 TTF、自定义字体导入），
-  详见 [deferred-fonts.md](trial-reports/deferred-fonts.md)。
+  详见 [deferred-fonts.md](deferred-fonts.md)。
 
 ---
 

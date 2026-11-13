@@ -368,3 +368,12 @@ FodyWeavers.xsd
 /.shots/
 /promo/
 /dist/
+
+# 以下三类不属于 GPL「对应源码」，不进公开仓库。
+# 注意：.gitignore 不支持行内注释，注释必须独立成行，否则整行会被当成模式。
+# 定价、渠道、KPI、销售文案（商业信息）
+/Docs/marketing/
+# SolidWorks 装配体与 STL（笔架/刀头硬件设计）
+/model/
+# 开发期真机测试记录：含本机路径与真实设备标识，且体积以截图为主
+/Docs/trial-reports/

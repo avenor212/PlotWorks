@@ -1,12 +1,9 @@
-# These are supported funding model platforms
-
-github: IridiumIO
-patreon: # Replace with a single Patreon username
-open_collective: # Replace with a single Open Collective username
-ko_fi: IridiumIO
-tidelift: # Replace with a single Tidelift platform-name/package-name e.g., npm/babel
-community_bridge: # Replace with a single Community Bridge project-name e.g., cloud-foundry
-liberapay: # Replace with a single Liberapay username
-issuehunt: # Replace with a single IssueHunt username
-otechie: # Replace with a single Otechie username
-lfx_crowdfunding: # Replace with a single LFX Crowdfunding project-name e.g., cloud-foundry
+# Funding / 赞助
+#
+# 本仓库是 PolyCut 的非官方分支（GPL-3.0）。上游作者的赞助入口在：
+#   https://github.com/IridiumIO/PolyCut
+# 本仓库不代收赞助，也不把 Sponsor 按钮导向上游——避免让赞助者误以为
+# 这笔钱支持的是本分支或反之。
+#
+# 若要为本分支开启赞助，取消下面一行的注释并填入自己的 GitHub 用户名：
+# github: your-handle

@@ -128,7 +128,7 @@
 
 ## 已经准备好的：SVG → JSON 转换脚本
 
-[tools/svg-to-stroke-font.py](tools/svg-to-stroke-font.py) 已经写好并测过。
+[tools/svg-to-stroke-font.py](../tools/svg-to-stroke-font.py) 已经写好并测过。
 
 **用法**：
 

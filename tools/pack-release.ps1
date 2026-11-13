@@ -180,11 +180,19 @@ if ($fileVersion -notlike "$Version.*" -and $fileVersion -ne $Version) {
     throw "exe 的 FileVersion 是 $fileVersion，与版本号 $Version 不符（检查 vbproj 的 <Version>）"
 }
 
-foreach ($required in @('LICENSE.txt')) {
+foreach ($required in @('LICENSE.txt', 'SOURCE.md', 'MODIFICATIONS.md', 'THIRD-PARTY-NOTICES.md')) {
     if (-not (Test-Path (Join-Path $RepoRoot $required))) { throw "仓库根缺少 $required，GPL 分发必须附上" }
 }
+if (-not (Test-Path (Join-Path $RepoRoot 'licenses'))) { throw "仓库根缺少 licenses\\ 目录，第三方许可文本必须随包" }
 
-Write-Host "产物检查通过：1 个 exe、5 个字体、文件版本 $fileVersion" -ForegroundColor DarkGray
+# 占位符没填就打包，等于发一个「源码在 <源码仓库URL>」的无效说明——只警告，不拦住出包，
+# 但把话说到耳朵里。
+$sourceText = Get-Content (Join-Path $RepoRoot 'SOURCE.md') -Raw
+if ($sourceText -match '<源码仓库URL>') {
+    Write-Host '警告：SOURCE.md 里仍有 <源码仓库URL> 等占位符，这份包还不能对外分发。' -ForegroundColor Yellow
+}
+
+Write-Host "产物检查通过：1 个 exe、5 个字体、合规文件齐全、文件版本 $fileVersion" -ForegroundColor DarkGray
 
 # ---------------------------------------------------------------- 收拾不该进包的东西
 
@@ -197,7 +205,18 @@ foreach ($name in @('IxMilia.Dxf.xml')) {
 Get-ChildItem $FinalOutput -Recurse -Filter *.pdb -ErrorAction SilentlyContinue | ForEach-Object {
     Remove-Item $_.FullName -Force; $script:removed++
 }
-if ($removed -gt 0) { Write-Host "清掉 $removed 个非运行时文件（XML 文档 / pdb）" -ForegroundColor DarkGray }
+
+# framework-dependent 形态不走 -r win-x64，NuGet 会把别的 RID 的原生资产一起塞进来
+# （runtimes\osx-x64\native\*.dylib、runtime.osx.*.dll）。Windows 程序根本不会加载它们，
+# 留着只是体积与第三方法务噪音（cairo/freetype/glib 各自的许可都要跟着致谢），直接删掉。
+foreach ($rid in @('osx-x64', 'osx-arm64', 'linux-x64', 'linux-arm64')) {
+    $ridDir = Join-Path $FinalOutput (Join-Path 'runtimes' $rid)
+    if (Test-Path $ridDir) { Remove-Item $ridDir -Recurse -Force; $removed++ }
+}
+Get-ChildItem $FinalOutput -Filter 'runtime.*.dll' -ErrorAction SilentlyContinue | ForEach-Object {
+    if ($_.Name -match 'osx|linux') { Remove-Item $_.FullName -Force; $script:removed++ }
+}
+if ($removed -gt 0) { Write-Host "清掉 $removed 个非运行时文件（XML 文档 / pdb / 异平台原生库）" -ForegroundColor DarkGray }
 
 # ---------------------------------------------------------------- 打包
 
@@ -217,6 +236,14 @@ Copy-Item (Join-Path $FinalOutput '*') $stage -Recurse -Force
 # 分发二进制必须附许可与出处说明（GPL-3.0）
 Copy-Item (Join-Path $RepoRoot 'LICENSE.txt') $stage -Force
 Copy-Item (Join-Path $RepoRoot 'README.md') $stage -Force
+
+# GPL-3.0 §6：目标码旁边必须给出「对应源码在哪拿」的清晰指引，所以 SOURCE.md 必须随包，
+# 不能只放在网站上。MODIFICATIONS.md 是 §5(a) 的修改声明，THIRD-PARTY-NOTICES.md 与
+# licenses/ 覆盖第三方组件与 Arphic 字体数据的独立义务。
+foreach ($doc in @('SOURCE.md', 'MODIFICATIONS.md', 'THIRD-PARTY-NOTICES.md')) {
+    Copy-Item (Join-Path $RepoRoot $doc) $stage -Force
+}
+Copy-Item (Join-Path $RepoRoot 'licenses') (Join-Path $stage 'licenses') -Recurse -Force
 
 # 用户手册与主界面截图一起进包：解压后第一眼就能看到怎么用。
 # 手册里指向 A1-README.md 之类的链接在包内会失效，正文本身是自洽的。
