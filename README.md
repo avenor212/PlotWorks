@@ -83,9 +83,9 @@ PlotWorks 是 [PolyCut](https://github.com/IridiumIO/PolyCut) 的一个魔改分
 
 # 安装
 
-从 Releases 下载压缩包解压即用，不需要安装。压缩包内需保留 `Resources\Fonts\` 目录——5 款单线字体在里面，删了中文就写不成单线。
+安装包不通过 GitHub 发布——本仓库只托管源码。请从购买渠道获取安装包，解压即用，不需要安装。压缩包内需保留 `Resources\Fonts\` 目录——5 款单线字体在里面，删了中文就写不成单线。
 
-如果是框架依赖版（约 30 MB），还需要装 .NET 10 Desktop Runtime；自包含版（约 150 MB）不需要。
+自包含版（约 68 MB）已打包 .NET 运行时，不需要额外安装；框架依赖版（约 10 MB）需要先装 .NET 10 Desktop Runtime。
 
 程序是便携式的：配置文件默认写到 `%LocalAppData%\PlotWorks`；如果把程序放在任意名为 `PlotWorks`（或旧版遗留的 `PolyCut`）的目录里，就会改用该目录下的 `.PlotWorksData`，从而实现完全便携。
 
